@@ -1505,12 +1505,6 @@
             if ('speechSynthesis' in window) {
                 console.log('✅ 浏览器支持语音合成');
                 
-                // 获取可用语音列表
-                speechSynthesis.onvoiceschanged = function() {
-                    const voices = speechSynthesis.getVoices();
-                    console.log(`可用的语音数量: ${voices.length}`);
-                };
-                
                 // 页面卸载时停止语音
                 window.addEventListener('beforeunload', stopSpeech);
                 
@@ -1526,6 +1520,36 @@
             } else {
                 console.warn('❌ 浏览器不支持语音合成');
             }
+        }
+
+        // 清理文本内容 - 移除所有标点符号、特殊字符和emoji
+        function cleanTextForTTS(text) {
+            console.log('原始TTS文本:', text.substring(0, 100) + '...');
+            
+            // 1. 移除HTML标签
+            let cleanText = text.replace(/<[^>]*>/g, ' ');
+            
+            // 2. 移除所有特殊符号和标点（保留空格和基本标点）
+            cleanText = cleanText.replace(/[*\/#@$%^&()\[\]{}<>|\\_+=~`'"?!.,:;]/g, ' ');
+            
+            // 3. 移除emoji和特殊Unicode字符
+            cleanText = cleanText.replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F700}-\u{1F77F}]|[\u{1F780}-\u{1F7FF}]|[\u{1F800}-\u{1F8FF}]|[\u{1F900}-\u{1F9FF}]|[\u{1FA00}-\u{1FA6F}]|[\u{1FA70}-\u{1FAFF}]|[\u{2702}-\u{27B0}]|[\u{24C2}-\u{1F251}]/gu, ' ');
+            
+            // 4. 移除多余的星号（用于加粗的**）
+            cleanText = cleanText.replace(/\*\*/g, ' ');
+            cleanText = cleanText.replace(/\*/g, ' ');
+            
+            // 5. 移除数字后面的点（如1. 2. 3.）
+            cleanText = cleanText.replace(/(\d+)\./g, '$1 ');
+            
+            // 6. 合并多个空格为单个空格
+            cleanText = cleanText.replace(/\s+/g, ' ');
+            
+            // 7. 修剪首尾空格
+            cleanText = cleanText.trim();
+            
+            console.log('清理后TTS文本:', cleanText.substring(0, 100) + '...');
+            return cleanText;
         }
 
         // 为消息添加TTS按钮
@@ -1589,24 +1613,38 @@
                 speedControl.appendChild(speedInput);
                 speedControl.appendChild(speedValue);
                 
-                // 事件监听
+                // 存储原始文本用于TTS
+                const originalText = text;
+                
+                // 事件监听 - 点击小喇叭按钮
                 ttsBtn.addEventListener('click', () => {
                     if (isSpeechPlaying) {
-                        speechSynthesis.pause();
-                        ttsBtn.innerHTML = '<i class="fas fa-play"></i> ' + 
-                                          (currentLang === 'zh' ? '继续' : 'Resume');
+                        // 如果正在播放，点击停止
+                        stopSpeech();
+                        ttsBtn.innerHTML = '<i class="fas fa-volume-up"></i> ' + 
+                                          (currentLang === 'zh' ? '朗读' : 'Speak');
+                        stopBtn.style.display = 'none';
+                        ttsBtn.classList.remove('playing');
                     } else {
-                        speakText(text, langSelect.value, parseFloat(speedInput.value));
+                        // 如果停止，点击开始播放
+                        speakText(originalText, langSelect.value, parseFloat(speedInput.value));
                     }
                 });
                 
-                stopBtn.addEventListener('click', stopSpeech);
+                // 停止按钮点击事件
+                stopBtn.addEventListener('click', () => {
+                    stopSpeech();
+                    ttsBtn.innerHTML = '<i class="fas fa-volume-up"></i> ' + 
+                                      (currentLang === 'zh' ? '朗读' : 'Speak');
+                    stopBtn.style.display = 'none';
+                    ttsBtn.classList.remove('playing');
+                });
                 
                 // 监听语音状态
                 speechSynthesis.addEventListener('start', () => {
                     isSpeechPlaying = true;
-                    ttsBtn.innerHTML = '<i class="fas fa-pause"></i> ' + 
-                                      (currentLang === 'zh' ? '暂停' : 'Pause');
+                    ttsBtn.innerHTML = '<i class="fas fa-stop"></i> ' + 
+                                      (currentLang === 'zh' ? '停止' : 'Stop');
                     stopBtn.style.display = 'inline-flex';
                     ttsBtn.classList.add('playing');
                 });
@@ -1627,8 +1665,17 @@
                 
                 speechSynthesis.addEventListener('resume', () => {
                     isSpeechPlaying = true;
-                    ttsBtn.innerHTML = '<i class="fas fa-pause"></i> ' + 
-                                      (currentLang === 'zh' ? '暂停' : 'Pause');
+                    ttsBtn.innerHTML = '<i class="fas fa-stop"></i> ' + 
+                                      (currentLang === 'zh' ? '停止' : 'Stop');
+                });
+                
+                speechSynthesis.addEventListener('error', (event) => {
+                    console.error('TTS错误:', event);
+                    isSpeechPlaying = false;
+                    ttsBtn.innerHTML = '<i class="fas fa-volume-up"></i> ' + 
+                                      (currentLang === 'zh' ? '朗读' : 'Speak');
+                    stopBtn.style.display = 'none';
+                    ttsBtn.classList.remove('playing');
                 });
                 
                 ttsContainer.appendChild(ttsBtn);
@@ -1640,7 +1687,7 @@
             }
         }
 
-        // 朗读文本
+        // 朗读文本 - 使用原始文本，不修改内容
         function speakText(text, lang = null, rate = 1.0) {
             if (!('speechSynthesis' in window)) {
                 showNotification(currentLang === 'zh' ? '您的浏览器不支持语音合成' : 'Your browser does not support speech synthesis', 'error');
@@ -1650,8 +1697,13 @@
             // 停止当前语音
             stopSpeech();
             
-            // 清理文本：移除HTML标签
-            const cleanText = text.replace(/<[^>]*>/g, '');
+            // 清理文本：使用cleanTextForTTS函数
+            const cleanText = cleanTextForTTS(text);
+            
+            if (!cleanText || cleanText.trim() === '') {
+                showNotification(currentLang === 'zh' ? '没有可朗读的文本内容' : 'No text content to speak', 'warning');
+                return;
+            }
             
             // 自动检测语言（如果没有指定）
             let speechLang = lang;
@@ -1660,7 +1712,9 @@
                 speechLang = hasChinese ? 'zh-CN' : 'en-US';
             }
             
-            // 创建语音实例
+            console.log(`TTS: 语言=${speechLang}, 语速=${rate}, 文本长度=${cleanText.length}`);
+            
+            // 创建语音实例 - 使用清理后的文本
             currentSpeech = new SpeechSynthesisUtterance(cleanText);
             currentSpeech.lang = speechLang;
             currentSpeech.rate = rate;
@@ -1708,10 +1762,8 @@
             const speedLabels = document.querySelectorAll('.tts-speed-control span:first-child');
             
             ttsButtons.forEach(btn => {
-                if (isSpeechPlaying && speechSynthesis.paused) {
-                    btn.innerHTML = '<i class="fas fa-play"></i> ' + (currentLang === 'zh' ? '继续' : 'Resume');
-                } else if (isSpeechPlaying) {
-                    btn.innerHTML = '<i class="fas fa-pause"></i> ' + (currentLang === 'zh' ? '暂停' : 'Pause');
+                if (isSpeechPlaying) {
+                    btn.innerHTML = '<i class="fas fa-stop"></i> ' + (currentLang === 'zh' ? '停止' : 'Stop');
                 } else {
                     btn.innerHTML = '<i class="fas fa-volume-up"></i> ' + (currentLang === 'zh' ? '朗读' : 'Speak');
                 }
@@ -1862,62 +1914,62 @@
                 "困难气道": `# 困难气道处理流程
 
 ## 1. 术前评估
-- **Mallampati分级**：I-IV级
-- **张口度**：正常＞3cm
-- **甲颏距离**：＞6cm
-- **头颈活动度**：＞90°
+- Mallampati分级：I-IV级
+- 张口度：正常大于3厘米
+- 甲颏距离：大于6厘米
+- 头颈活动度：大于90度
 
 ## 2. 准备工具
-- **基本设备**：不同型号喉镜片
-- **声门上工具**：喉罩(LMA)、i-gel
-- **可视工具**：可视喉镜、纤维支气管镜
-- **有创工具**：环甲膜穿刺套件
+- 基本设备：不同型号喉镜片
+- 声门上工具：喉罩、i-gel
+- 可视工具：可视喉镜、纤维支气管镜
+- 有创工具：环甲膜穿刺套件
 
 ## 3. 处理策略
-- **预充氧**：100%氧气3-5分钟
-- **清醒插管** vs 快速诱导
-- **呼叫帮助**：尽早寻求资深医师协助
+- 预充氧：100百分比氧气3到5分钟
+- 清醒插管或快速诱导
+- 呼叫帮助：尽早寻求资深医师协助
 
 ## 4. 无法插管无法氧合
-立即实施环甲膜切开！
+立即实施环甲膜切开
 
-⚠️ **注意**：以上为一般性建议，具体情况请根据医院指南处理。`,
-                "丙泊酚": `# 丙泊酚 (Propofol)
+注意：以上为一般性建议，具体情况请根据医院指南处理。`,
+                "丙泊酚": `# 丙泊酚 Propofol
 
 ## 剂量参考
 ### 成人
-- **诱导剂量**：1.5-2.5 mg/kg IV
-- **维持剂量**：4-12 mg/kg/h
-- **镇静剂量**：0.5-1.5 mg/kg/h
+- 诱导剂量：1.5到2.5毫克每千克静脉注射
+- 维持剂量：4到12毫克每千克每小时
+- 镇静剂量：0.5到1.5毫克每千克每小时
 
 ### 儿童
-- **诱导剂量**：2-3 mg/kg IV
-- **维持剂量**：9-15 mg/kg/h
+- 诱导剂量：2到3毫克每千克静脉注射
+- 维持剂量：9到15毫克每千克每小时
 
 ## 注意事项
-1. **注射痛**：预注利多卡因
-2. **呼吸抑制**：需备好气道管理设备
-3. **循环抑制**：血压下降
-4. **过敏反应**：大豆、鸡蛋过敏者禁用
+1. 注射痛：预注利多卡因
+2. 呼吸抑制：需备好气道管理设备
+3. 循环抑制：血压下降
+4. 过敏反应：大豆、鸡蛋过敏者禁用
 
-⚠️ **重要提示**：以上剂量仅供参考。`,
-                "恶心呕吐": `# 术后恶心呕吐(PONV)防治
+重要提示：以上剂量仅供参考。`,
+                "恶心呕吐": `# 术后恶心呕吐PONV防治
 
 ## 风险因素
-- **患者因素**：女性、不吸烟、晕动病史
-- **麻醉因素**：吸入麻醉药、阿片类药物
+- 患者因素：女性、不吸烟、晕动病史
+- 麻醉因素：吸入麻醉药、阿片类药物
 
 ## 预防策略
 ### 基础预防
-1. **区域麻醉优先**
-2. **丙泊酚静脉麻醉**
-3. **充分水化**
+1. 区域麻醉优先
+2. 丙泊酚静脉麻醉
+3. 充分水化
 
 ### 药物预防
-- **地塞米松**：4-8 mg IV
-- **5-HT3拮抗剂**：昂丹司琼 4 mg IV
+- 地塞米松：4到8毫克静脉注射
+- 5-HT3拮抗剂：昂丹司琼4毫克静脉注射
 
-⚠️ **注意**：具体用药方案请根据医院指南制定。`
+注意：具体用药方案请根据医院指南制定。`
             };
 
             for (const keyword in fallbackResponses) {
@@ -1926,20 +1978,27 @@
                 }
             }
 
-            return `**抱歉，AI服务暂时不可用**\n\n错误信息：${errorMsg}\n\n**您可以尝试询问：**\n- 如何处理困难气道？\n- 丙泊酚的常用剂量是多少？\n- 术后恶心呕吐如何预防？`;
+            return `抱歉，AI服务暂时不可用
+
+错误信息：${errorMsg}
+
+您可以尝试询问：
+1. 如何处理困难气道？
+2. 丙泊酚的常用剂量是多少？
+3. 术后恶心呕吐如何预防？`;
         }
 
         // 发送消息到AI
         async function sendMessageToAI(message) {
             try {
-                console.log('🔍 开始调用AI API...');
+                console.log('开始调用AI API...');
                 
                 const isEnglish = detectLanguage(message);
                 const language = isEnglish ? 'en' : 'zh';
-                console.log('🌐 检测到的语言:', language);
+                console.log('检测到的语言:', language);
                 
                 const functionURL = '/.netlify/functions/chat';
-                console.log('📡 调用URL:', functionURL);
+                console.log('调用URL:', functionURL);
                 
                 const response = await fetch(functionURL, {
                     method: 'POST',
@@ -1954,7 +2013,7 @@
                     })
                 });
 
-                console.log('✅ 收到响应，状态码:', response.status);
+                console.log('收到响应，状态码:', response.status);
                 
                 if (!response.ok) {
                     const errorText = await response.text();
@@ -1962,17 +2021,17 @@
                 }
 
                 const data = await response.json();
-                console.log('📦 解析的响应数据:', data);
+                console.log('解析的响应数据:', data);
 
                 if (!data.response) {
                     throw new Error('AI回复为空');
                 }
 
-                console.log('🎉 AI调用成功，回复长度:', data.response.length);
+                console.log('AI调用成功，回复长度:', data.response.length);
                 return data.response;
                 
             } catch (error) {
-                console.error('💥 AI调用失败:', error);
+                console.error('AI调用失败:', error);
                 return getFallbackResponse(message, error.message);
             }
         }
@@ -2162,13 +2221,16 @@
             ttsBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
             ttsBtn.title = currentLang === 'zh' ? '朗读' : 'Speak';
             
-            // 确定朗读的语言
-            const isChinese = /[\u4e00-\u9fa5]/.test(term);
-            const textToSpeak = isChinese ? term : translation;
-            const langToUse = isChinese ? 'zh-CN' : 'en-US';
+            // 确定朗读的文本
+            const textToSpeak = currentLang === 'zh' ? term : translation;
             
             ttsBtn.addEventListener('click', () => {
-                speakText(textToSpeak, langToUse);
+                // 如果正在播放，点击停止
+                if (isSpeechPlaying) {
+                    stopSpeech();
+                    return;
+                }
+                speakText(textToSpeak);
             });
             
             li.appendChild(termDiv);
@@ -2573,7 +2635,7 @@
 
         // ============ API测试函数 ============
         window.testAPI = async function() {
-            console.log('🧪 开始测试API连接...');
+            console.log('开始测试API连接...');
             
             try {
                 const functionURL = '/.netlify/functions/chat';
@@ -2592,27 +2654,27 @@
                 
                 const text = await response.text();
                 
-                let result = `🔍 ${currentLang === 'zh' ? 'API测试结果：' : 'API Test Result:'}\n`;
-                result += `✅ ${currentLang === 'zh' ? '状态码:' : 'Status:'} ${response.status}\n`;
+                let result = `${currentLang === 'zh' ? 'API测试结果：' : 'API Test Result:'}\n`;
+                result += `${currentLang === 'zh' ? '状态码:' : 'Status:'} ${response.status}\n`;
                 
                 try {
                     const data = JSON.parse(text);
                     if (response.ok) {
-                        result += `🎉 ${currentLang === 'zh' ? 'API连接成功！' : 'API connection successful!'}\n`;
+                        result += `${currentLang === 'zh' ? 'API连接成功！' : 'API connection successful!'}\n`;
                         showNotification(currentLang === 'zh' ? 'API连接成功！' : 'API connection successful!', 'success');
                     } else {
-                        result += `⚠️ ${currentLang === 'zh' ? 'API返回错误' : 'API returned error'}\n`;
+                        result += `${currentLang === 'zh' ? 'API返回错误' : 'API returned error'}\n`;
                         result += `${currentLang === 'zh' ? '错误:' : 'Error:'} ${data.message || data.error || 'unknown'}\n`;
                     }
                 } catch (e) {
-                    result += `❌ ${currentLang === 'zh' ? '响应不是JSON格式' : 'Response is not JSON format'}\n`;
+                    result += `${currentLang === 'zh' ? '响应不是JSON格式' : 'Response is not JSON format'}\n`;
                 }
                 
                 alert(result);
                 console.log('API测试结果:', result);
                 
             } catch (error) {
-                const errorMsg = `❌ ${currentLang === 'zh' ? 'API测试失败:' : 'API test failed:'}\n${error.message}`;
+                const errorMsg = `${currentLang === 'zh' ? 'API测试失败:' : 'API test failed:'}\n${error.message}`;
                 alert(errorMsg);
                 console.error('API测试失败:', error);
                 showNotification(currentLang === 'zh' ? 'API测试失败' : 'API test failed', 'error');
