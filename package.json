@@ -1,0 +1,31 @@
+{
+  "name": "aneslink-anesthesia-assistant",
+  "version": "1.0.0",
+  "description": "AnesLink麻醉学助手 - AI助手、医学辞典、随访提醒",
+  "main": "index.html",
+  "scripts": {
+    "build": "echo 'Build complete'",
+    "test": "echo 'No tests specified'",
+    "dev": "netlify dev"
+  },
+  "keywords": [
+    "anesthesia",
+    "medical",
+    "ai-assistant",
+    "deepseek",
+    "dictionary",
+    "reminder"
+  ],
+  "author": "AnesLink Team",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.0",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "@netlify/functions": "^2.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
