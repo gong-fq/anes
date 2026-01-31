@@ -265,6 +265,108 @@
             color: var(--accent-color);
         }
 
+        /* TTS容器样式 */
+        .tts-container {
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            padding: 10px;
+            background: rgba(240, 245, 255, 0.5);
+            border-radius: var(--border-radius);
+            border: 1px solid #e0e7ff;
+        }
+
+        .tts-btn {
+            background: linear-gradient(135deg, var(--accent-color), #3a9fc7);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            padding: 8px 16px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tts-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 201, 240, 0.3);
+        }
+
+        .tts-btn.playing {
+            background: linear-gradient(135deg, var(--success-color), #27ae60);
+        }
+
+        .tts-stop-btn {
+            background: linear-gradient(135deg, var(--danger-color), #c0392b);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            padding: 8px 16px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tts-stop-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+        }
+
+        .tts-lang-select {
+            background: white;
+            border: 2px solid #e0e7ff;
+            color: var(--dark-color);
+            border-radius: var(--border-radius);
+            padding: 7px 12px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .tts-lang-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(42, 110, 204, 0.2);
+        }
+
+        .tts-speed-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 12px;
+            background: white;
+            border-radius: var(--border-radius);
+            border: 1px solid #e0e7ff;
+        }
+
+        .tts-speed-control input[type="range"] {
+            -webkit-appearance: none;
+            width: 80px;
+            height: 6px;
+            background: #e0e7ff;
+            border-radius: 3px;
+            outline: none;
+        }
+
+        .tts-speed-control input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
         .chat-input-area {
             display: flex;
             gap: 10px;
@@ -443,6 +545,7 @@
             padding: 15px 0;
             border-bottom: 1px solid #eee;
             transition: var(--transition);
+            position: relative;
         }
 
         .term-item:hover {
@@ -468,6 +571,29 @@
         .translation {
             color: var(--gray-color);
             margin-bottom: 8px;
+        }
+
+        /* 辞典术语TTS按钮 */
+        .tts-term-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            cursor: pointer;
+            font-size: 0.9rem;
+            opacity: 0.6;
+            transition: var(--transition);
+        }
+
+        .term-item:hover .tts-term-btn {
+            opacity: 1;
+        }
+
+        .tts-term-btn:hover {
+            color: var(--accent-color);
         }
 
         .reference-links {
@@ -944,6 +1070,15 @@
                 width: 95%;
                 padding: 20px;
             }
+            
+            .tts-container {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .tts-speed-control {
+                width: 100%;
+            }
         }
 
         /* 滚动条样式 */
@@ -1051,30 +1186,6 @@
             50% {
                 transform: scale(1.1);
             }
-        }
-
-        /* TTS按钮样式 */
-        .tts-btn {
-            background: none;
-            border: none;
-            color: var(--primary-color);
-            cursor: pointer;
-            font-size: 0.9rem;
-            margin-top: 8px;
-            padding: 5px 10px;
-            border-radius: 5px;
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .tts-btn:hover {
-            background: var(--light-color);
-        }
-
-        .tts-btn.playing {
-            color: var(--success-color);
         }
 
         /* 通知样式 */
@@ -1383,31 +1494,253 @@
         let dictionaryMode = "zh-en";
         let currentFilter = "all";
         let recognition;
-        let currentUtterance;
+        let currentSpeech = null;
+        let isSpeechPlaying = false;
         let editingReminderId = null;
 
-        // API基础URL
-        const API_BASE_URL = '';
+        // ============ TTS文本转语音功能 ============
+        function initTTS() {
+            console.log('初始化TTS功能...');
+            
+            if ('speechSynthesis' in window) {
+                console.log('✅ 浏览器支持语音合成');
+                
+                // 获取可用语音列表
+                speechSynthesis.onvoiceschanged = function() {
+                    const voices = speechSynthesis.getVoices();
+                    console.log(`可用的语音数量: ${voices.length}`);
+                };
+                
+                // 页面卸载时停止语音
+                window.addEventListener('beforeunload', stopSpeech);
+                
+                // 页面隐藏时暂停语音
+                document.addEventListener('visibilitychange', () => {
+                    if (document.hidden && isSpeechPlaying) {
+                        speechSynthesis.pause();
+                    } else if (!document.hidden && speechSynthesis.paused) {
+                        speechSynthesis.resume();
+                    }
+                });
+                
+            } else {
+                console.warn('❌ 浏览器不支持语音合成');
+            }
+        }
 
-        // 标签页切换功能
+        // 为消息添加TTS按钮
+        function addTTSButton(messageElement, text) {
+            if (!('speechSynthesis' in window)) return;
+            
+            if (messageElement.classList.contains('assistant') && !messageElement.querySelector('.tts-container')) {
+                const ttsContainer = document.createElement('div');
+                ttsContainer.className = 'tts-container';
+                
+                // TTS按钮
+                const ttsBtn = document.createElement('button');
+                ttsBtn.className = 'tts-btn';
+                ttsBtn.innerHTML = '<i class="fas fa-volume-up"></i> ' + 
+                                  (currentLang === 'zh' ? '朗读' : 'Speak');
+                
+                // 停止按钮
+                const stopBtn = document.createElement('button');
+                stopBtn.className = 'tts-stop-btn';
+                stopBtn.innerHTML = '<i class="fas fa-stop"></i> ' + 
+                                   (currentLang === 'zh' ? '停止' : 'Stop');
+                stopBtn.style.display = 'none';
+                
+                // 语言选择
+                const langSelect = document.createElement('select');
+                langSelect.className = 'tts-lang-select';
+                langSelect.innerHTML = `
+                    <option value="zh-CN">中文</option>
+                    <option value="en-US">English</option>
+                    <option value="en-GB">English (UK)</option>
+                `;
+                langSelect.value = currentLang === 'zh' ? 'zh-CN' : 'en-US';
+                
+                // 语速控制
+                const speedControl = document.createElement('div');
+                speedControl.className = 'tts-speed-control';
+                
+                const speedLabel = document.createElement('span');
+                speedLabel.textContent = currentLang === 'zh' ? '语速:' : 'Speed:';
+                speedLabel.style.fontSize = '12px';
+                speedLabel.style.color = '#666';
+                
+                const speedInput = document.createElement('input');
+                speedInput.type = 'range';
+                speedInput.min = '0.5';
+                speedInput.max = '2';
+                speedInput.step = '0.1';
+                speedInput.value = '1';
+                speedInput.style.width = '80px';
+                
+                const speedValue = document.createElement('span');
+                speedValue.textContent = '1.0x';
+                speedValue.style.fontSize = '12px';
+                speedValue.style.minWidth = '35px';
+                
+                speedInput.addEventListener('input', (e) => {
+                    speedValue.textContent = e.target.value + 'x';
+                });
+                
+                speedControl.appendChild(speedLabel);
+                speedControl.appendChild(speedInput);
+                speedControl.appendChild(speedValue);
+                
+                // 事件监听
+                ttsBtn.addEventListener('click', () => {
+                    if (isSpeechPlaying) {
+                        speechSynthesis.pause();
+                        ttsBtn.innerHTML = '<i class="fas fa-play"></i> ' + 
+                                          (currentLang === 'zh' ? '继续' : 'Resume');
+                    } else {
+                        speakText(text, langSelect.value, parseFloat(speedInput.value));
+                    }
+                });
+                
+                stopBtn.addEventListener('click', stopSpeech);
+                
+                // 监听语音状态
+                speechSynthesis.addEventListener('start', () => {
+                    isSpeechPlaying = true;
+                    ttsBtn.innerHTML = '<i class="fas fa-pause"></i> ' + 
+                                      (currentLang === 'zh' ? '暂停' : 'Pause');
+                    stopBtn.style.display = 'inline-flex';
+                    ttsBtn.classList.add('playing');
+                });
+                
+                speechSynthesis.addEventListener('end', () => {
+                    isSpeechPlaying = false;
+                    ttsBtn.innerHTML = '<i class="fas fa-volume-up"></i> ' + 
+                                      (currentLang === 'zh' ? '朗读' : 'Speak');
+                    stopBtn.style.display = 'none';
+                    ttsBtn.classList.remove('playing');
+                });
+                
+                speechSynthesis.addEventListener('pause', () => {
+                    isSpeechPlaying = false;
+                    ttsBtn.innerHTML = '<i class="fas fa-play"></i> ' + 
+                                      (currentLang === 'zh' ? '继续' : 'Resume');
+                });
+                
+                speechSynthesis.addEventListener('resume', () => {
+                    isSpeechPlaying = true;
+                    ttsBtn.innerHTML = '<i class="fas fa-pause"></i> ' + 
+                                      (currentLang === 'zh' ? '暂停' : 'Pause');
+                });
+                
+                ttsContainer.appendChild(ttsBtn);
+                ttsContainer.appendChild(stopBtn);
+                ttsContainer.appendChild(langSelect);
+                ttsContainer.appendChild(speedControl);
+                
+                messageElement.appendChild(ttsContainer);
+            }
+        }
+
+        // 朗读文本
+        function speakText(text, lang = null, rate = 1.0) {
+            if (!('speechSynthesis' in window)) {
+                showNotification(currentLang === 'zh' ? '您的浏览器不支持语音合成' : 'Your browser does not support speech synthesis', 'error');
+                return;
+            }
+            
+            // 停止当前语音
+            stopSpeech();
+            
+            // 清理文本：移除HTML标签
+            const cleanText = text.replace(/<[^>]*>/g, '');
+            
+            // 自动检测语言（如果没有指定）
+            let speechLang = lang;
+            if (!speechLang) {
+                const hasChinese = /[\u4e00-\u9fa5]/.test(cleanText);
+                speechLang = hasChinese ? 'zh-CN' : 'en-US';
+            }
+            
+            // 创建语音实例
+            currentSpeech = new SpeechSynthesisUtterance(cleanText);
+            currentSpeech.lang = speechLang;
+            currentSpeech.rate = rate;
+            currentSpeech.volume = 1.0;
+            currentSpeech.pitch = 1.0;
+            
+            // 选择语音
+            const voices = speechSynthesis.getVoices();
+            const selectedVoice = voices.find(voice => voice.lang.startsWith(speechLang.split('-')[0]));
+            if (selectedVoice) {
+                currentSpeech.voice = selectedVoice;
+            }
+            
+            // 开始播放
+            speechSynthesis.speak(currentSpeech);
+        }
+
+        // 停止语音
+        function stopSpeech() {
+            if (speechSynthesis.speaking) {
+                speechSynthesis.cancel();
+                isSpeechPlaying = false;
+                currentSpeech = null;
+            }
+        }
+
+        // 为所有AI消息添加TTS按钮
+        function addTTSButtonsToAllMessages() {
+            const aiMessages = document.querySelectorAll('.message.assistant');
+            aiMessages.forEach((msg) => {
+                if (!msg.querySelector('.tts-container')) {
+                    const messageContent = msg.querySelector('.message-content');
+                    if (messageContent) {
+                        const text = messageContent.textContent || messageContent.innerText;
+                        addTTSButton(msg, text);
+                    }
+                }
+            });
+        }
+
+        // 更新TTS按钮文本
+        function updateTTSButtonsText() {
+            const ttsButtons = document.querySelectorAll('.tts-btn');
+            const ttsStopButtons = document.querySelectorAll('.tts-stop-btn');
+            const speedLabels = document.querySelectorAll('.tts-speed-control span:first-child');
+            
+            ttsButtons.forEach(btn => {
+                if (isSpeechPlaying && speechSynthesis.paused) {
+                    btn.innerHTML = '<i class="fas fa-play"></i> ' + (currentLang === 'zh' ? '继续' : 'Resume');
+                } else if (isSpeechPlaying) {
+                    btn.innerHTML = '<i class="fas fa-pause"></i> ' + (currentLang === 'zh' ? '暂停' : 'Pause');
+                } else {
+                    btn.innerHTML = '<i class="fas fa-volume-up"></i> ' + (currentLang === 'zh' ? '朗读' : 'Speak');
+                }
+            });
+            
+            ttsStopButtons.forEach(btn => {
+                btn.innerHTML = '<i class="fas fa-stop"></i> ' + (currentLang === 'zh' ? '停止' : 'Stop');
+            });
+            
+            speedLabels.forEach(label => {
+                label.textContent = currentLang === 'zh' ? '语速:' : 'Speed:';
+            });
+        }
+
+        // ============ 标签页切换功能 ============
         function setupTabs() {
             document.querySelectorAll('.tab').forEach(tab => {
                 tab.addEventListener('click', () => {
-                    // 移除所有标签的active类
                     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                    // 隐藏所有内容区域
                     document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
                     
-                    // 激活当前标签
                     tab.classList.add('active');
-                    // 显示对应内容区域
                     const tabId = tab.getAttribute('data-tab');
                     document.getElementById(tabId).classList.add('active');
                 });
             });
         }
 
-        // AI助手功能
+        // ============ AI助手功能 ============
         const chatMessages = document.getElementById('chat-messages');
         const userInput = document.getElementById('user-input');
         const sendBtn = document.getElementById('send-btn');
@@ -1444,7 +1777,7 @@
             icon.className = isUser ? 'fas fa-user-md' : 'fas fa-robot';
             
             const nameSpan = document.createElement('span');
-            nameSpan.textContent = isUser ? '麻醉医生' : 'AnesLink AI助手';
+            nameSpan.textContent = isUser ? (currentLang === 'zh' ? '麻醉医生' : 'Anesthesiologist') : 'AnesLink AI助手';
             
             messageHeader.appendChild(icon);
             messageHeader.appendChild(nameSpan);
@@ -1453,9 +1786,9 @@
             messageContent.className = 'message-content';
             
             if (isLoading) {
-                messageContent.innerHTML = '<div class="loading"></div> 正在思考中...';
+                messageContent.innerHTML = '<div class="loading"></div> ' + 
+                                          (currentLang === 'zh' ? '正在思考中...' : 'Thinking...');
             } else {
-                // 格式化AI回复
                 if (!isUser) {
                     messageContent.innerHTML = formatAIResponse(content);
                 } else {
@@ -1469,37 +1802,35 @@
             chatMessages.appendChild(messageDiv);
             chatMessages.scrollTop = chatMessages.scrollHeight;
             
+            // 如果是AI回复且不是加载状态，添加TTS按钮
+            if (!isUser && !isLoading) {
+                setTimeout(() => {
+                    addTTSButton(messageDiv, content);
+                }, 100);
+            }
+            
             return messageDiv;
         }
 
         // 格式化AI回复
         function formatAIResponse(text) {
-            // 处理标题
             text = text.replace(/^# (.*$)/gm, '<h3>$1</h3>');
             text = text.replace(/^## (.*$)/gm, '<h4>$1</h4>');
-            
-            // 处理加粗
             text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-            
-            // 处理列表
             text = text.replace(/^(\d+\.\s+.*$)/gm, '<li>$1</li>');
             text = text.replace(/^-\s+(.*$)/gm, '<li>$1</li>');
             
-            // 添加列表标签
             if (text.includes('<li>')) {
                 text = text.replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>');
             }
             
-            // 处理换行
             text = text.replace(/\n\n/g, '</p><p>');
             text = text.replace(/\n/g, '<br>');
             
-            // 包装段落
             if (!text.startsWith('<h') && !text.startsWith('<ul')) {
                 text = '<p>' + text + '</p>';
             }
             
-            // 添加免责声明
             if (text.toLowerCase().includes('剂量') || text.toLowerCase().includes('用药')) {
                 text += '<p style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-left: 4px solid #f39c12; border-radius: 4px;"><strong>⚠️ 重要提示：</strong>以上信息仅供参考，具体用药请结合患者实际情况，并参考最新药品说明书。</p>';
             }
@@ -1519,20 +1850,16 @@
             const englishRatio = englishChars.length / totalChars;
             
             if (englishRatio > 0.7 && englishChars.length > 5) {
-                console.log(`判定为英文 (英文占比: ${(englishRatio * 100).toFixed(1)}%)`);
                 return true;
             }
             
-            console.log(`判定为中文 (英文占比: ${(englishRatio * 100).toFixed(1)}%)`);
             return false;
         }
 
         // 备用回答系统
         function getFallbackResponse(message, errorMsg = '') {
             const fallbackResponses = {
-                "困难气道": {
-                    title: "困难气道处理流程",
-                    content: `# 困难气道处理流程
+                "困难气道": `# 困难气道处理流程
 
 ## 1. 术前评估
 - **Mallampati分级**：I-IV级
@@ -1554,11 +1881,8 @@
 ## 4. 无法插管无法氧合
 立即实施环甲膜切开！
 
-⚠️ **注意**：以上为一般性建议，具体情况请根据医院指南处理。`
-                },
-                "丙泊酚": {
-                    title: "丙泊酚 (Propofol)",
-                    content: `# 丙泊酚 (Propofol)
+⚠️ **注意**：以上为一般性建议，具体情况请根据医院指南处理。`,
+                "丙泊酚": `# 丙泊酚 (Propofol)
 
 ## 剂量参考
 ### 成人
@@ -1576,11 +1900,8 @@
 3. **循环抑制**：血压下降
 4. **过敏反应**：大豆、鸡蛋过敏者禁用
 
-⚠️ **重要提示**：以上剂量仅供参考。`
-                },
-                "恶心呕吐": {
-                    title: "术后恶心呕吐(PONV)防治",
-                    content: `# 术后恶心呕吐(PONV)防治
+⚠️ **重要提示**：以上剂量仅供参考。`,
+                "恶心呕吐": `# 术后恶心呕吐(PONV)防治
 
 ## 风险因素
 - **患者因素**：女性、不吸烟、晕动病史
@@ -1597,12 +1918,11 @@
 - **5-HT3拮抗剂**：昂丹司琼 4 mg IV
 
 ⚠️ **注意**：具体用药方案请根据医院指南制定。`
-                }
             };
 
             for (const keyword in fallbackResponses) {
                 if (message.toLowerCase().includes(keyword.toLowerCase())) {
-                    return fallbackResponses[keyword].content;
+                    return fallbackResponses[keyword];
                 }
             }
 
@@ -1615,7 +1935,8 @@
                 console.log('🔍 开始调用AI API...');
                 
                 const isEnglish = detectLanguage(message);
-                console.log('🌐 检测到的语言:', isEnglish ? 'English' : '中文');
+                const language = isEnglish ? 'en' : 'zh';
+                console.log('🌐 检测到的语言:', language);
                 
                 const functionURL = '/.netlify/functions/chat';
                 console.log('📡 调用URL:', functionURL);
@@ -1629,7 +1950,7 @@
                     body: JSON.stringify({
                         message: message,
                         history: chatHistory,
-                        language: isEnglish ? 'en' : 'zh'
+                        language: language
                     })
                 });
 
@@ -1667,7 +1988,7 @@
             console.log('发送消息:', message);
             
             sendBtn.disabled = true;
-            sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 发送中';
+            sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + (currentLang === 'zh' ? '发送中' : 'Sending');
             
             try {
                 const userMessageDiv = addMessage(message, true);
@@ -1689,7 +2010,7 @@
                 showNotification('消息发送失败: ' + error.message, 'error');
             } finally {
                 sendBtn.disabled = false;
-                sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i> 发送';
+                sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i> ' + (currentLang === 'zh' ? '发送' : 'Send');
                 userInput.value = '';
                 userInput.focus();
             }
@@ -1724,7 +2045,7 @@
             }
         }
 
-        // 医学辞典数据
+        // ============ 医学辞典功能 ============
         const dictionaryData = {
             "zh-en": {
                 "drugs": [
@@ -1822,6 +2143,41 @@
             }
         ];
 
+        // 创建术语项目（带TTS功能）
+        function createTermItem(term, translation) {
+            const li = document.createElement('li');
+            li.className = 'term-item';
+            
+            const termDiv = document.createElement('div');
+            termDiv.className = 'term';
+            termDiv.textContent = term;
+            
+            const translationDiv = document.createElement('div');
+            translationDiv.className = 'translation';
+            translationDiv.textContent = translation;
+            
+            // TTS按钮
+            const ttsBtn = document.createElement('button');
+            ttsBtn.className = 'tts-term-btn';
+            ttsBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+            ttsBtn.title = currentLang === 'zh' ? '朗读' : 'Speak';
+            
+            // 确定朗读的语言
+            const isChinese = /[\u4e00-\u9fa5]/.test(term);
+            const textToSpeak = isChinese ? term : translation;
+            const langToUse = isChinese ? 'zh-CN' : 'en-US';
+            
+            ttsBtn.addEventListener('click', () => {
+                speakText(textToSpeak, langToUse);
+            });
+            
+            li.appendChild(termDiv);
+            li.appendChild(translationDiv);
+            li.appendChild(ttsBtn);
+            
+            return li;
+        }
+
         // 加载词典术语
         function loadDictionaryTerms() {
             const data = dictionaryData[dictionaryMode];
@@ -1832,22 +2188,12 @@
             techniqueList.innerHTML = '';
             
             data.drugs.forEach(item => {
-                const li = document.createElement('li');
-                li.className = 'term-item';
-                li.innerHTML = `
-                    <div class="term">${item.term}</div>
-                    <div class="translation">${item.translation}</div>
-                `;
+                const li = createTermItem(item.term, item.translation);
                 drugList.appendChild(li);
             });
             
             data.techniques.forEach(item => {
-                const li = document.createElement('li');
-                li.className = 'term-item';
-                li.innerHTML = `
-                    <div class="term">${item.term}</div>
-                    <div class="translation">${item.translation}</div>
-                `;
+                const li = createTermItem(item.term, item.translation);
                 techniqueList.appendChild(li);
             });
         }
@@ -1892,7 +2238,7 @@
             });
         }
 
-        // 随访提醒数据
+        // ============ 随访提醒功能 ============
         function loadRemindersData() {
             const saved = localStorage.getItem('aneslink_reminders');
             if (saved) {
@@ -1969,7 +2315,7 @@
                     <div class="reminder-card">
                         <p style="text-align: center; color: var(--gray-color); padding: 30px;">
                             <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 15px; display: block; color: #ddd;"></i>
-                            暂无随访提醒
+                            ${currentLang === 'zh' ? '暂无随访提醒' : 'No follow-up reminders'}
                         </p>
                     </div>
                 `;
@@ -1983,7 +2329,11 @@
                 
                 const statusText = getStatusText(reminder);
                 const daysDiff = getDaysDifference(reminder.date);
-                const daysText = daysDiff > 0 ? `已过期${daysDiff}天` : (daysDiff < 0 ? `还剩${-daysDiff}天` : "今天");
+                const daysText = daysDiff > 0 ? 
+                    (currentLang === 'zh' ? `已过期${daysDiff}天` : `Overdue by ${daysDiff} days`) : 
+                    (daysDiff < 0 ? 
+                        (currentLang === 'zh' ? `还剩${-daysDiff}天` : `${-daysDiff} days left`) : 
+                        (currentLang === 'zh' ? "今天" : "Today"));
                 
                 card.innerHTML = `
                     <div class="reminder-title">
@@ -1992,33 +2342,33 @@
                     </div>
                     <div class="reminder-details">
                         <div class="detail-item">
-                            <span class="detail-label">随访日期</span>
+                            <span class="detail-label">${currentLang === 'zh' ? '随访日期' : 'Follow-up Date'}</span>
                             <span>${formatDate(reminder.date)} (${daysText})</span>
                         </div>
                         <div class="detail-item">
-                            <span class="detail-label">优先级</span>
+                            <span class="detail-label">${currentLang === 'zh' ? '优先级' : 'Priority'}</span>
                             <span>${getPriorityText(reminder.priority)}</span>
                         </div>
                         <div class="detail-item">
-                            <span class="detail-label">状态</span>
-                            <span>${reminder.completed ? '已完成' : '待处理'}</span>
+                            <span class="detail-label">${currentLang === 'zh' ? '状态' : 'Status'}</span>
+                            <span>${reminder.completed ? (currentLang === 'zh' ? '已完成' : 'Completed') : (currentLang === 'zh' ? '待处理' : 'Pending')}</span>
                         </div>
                     </div>
                     <div class="detail-item full-width">
-                        <span class="detail-label">备注</span>
+                        <span class="detail-label">${currentLang === 'zh' ? '备注' : 'Notes'}</span>
                         <span>${reminder.notes}</span>
                     </div>
                     <div class="reminder-actions-card">
                         ${!reminder.completed ? `
                             <button class="action-btn complete-btn" onclick="window.toggleReminderComplete(${reminder.id})">
-                                <i class="fas fa-check"></i> 标记完成
+                                <i class="fas fa-check"></i> ${currentLang === 'zh' ? '标记完成' : 'Mark Complete'}
                             </button>
                         ` : ''}
                         <button class="action-btn edit-btn" onclick="window.editReminder(${reminder.id})">
-                            <i class="fas fa-edit"></i> 编辑
+                            <i class="fas fa-edit"></i> ${currentLang === 'zh' ? '编辑' : 'Edit'}
                         </button>
                         <button class="action-btn delete-btn" onclick="window.deleteReminder(${reminder.id})">
-                            <i class="fas fa-trash"></i> 删除
+                            <i class="fas fa-trash"></i> ${currentLang === 'zh' ? '删除' : 'Delete'}
                         </button>
                     </div>
                 `;
@@ -2028,23 +2378,27 @@
         }
 
         function getStatusText(reminder) {
-            if (reminder.completed) return "已完成";
-            if (reminder.priority === "urgent") return "紧急";
-            if (reminder.priority === "upcoming") return "近期";
-            return "常规";
+            if (reminder.completed) return currentLang === 'zh' ? '已完成' : 'Completed';
+            if (reminder.priority === "urgent") return currentLang === 'zh' ? '紧急' : 'Urgent';
+            if (reminder.priority === "upcoming") return currentLang === 'zh' ? '近期' : 'Upcoming';
+            return currentLang === 'zh' ? '常规' : 'Routine';
         }
 
         function getPriorityText(priority) {
             switch(priority) {
-                case "urgent": return "紧急";
-                case "upcoming": return "近期";
-                default: return "常规";
+                case "urgent": return currentLang === 'zh' ? '紧急' : 'Urgent';
+                case "upcoming": return currentLang === 'zh' ? '近期' : 'Upcoming';
+                default: return currentLang === 'zh' ? '常规' : 'Routine';
             }
         }
 
         function formatDate(dateString) {
             const date = new Date(dateString);
-            return `${date.getFullYear()}年${date.getMonth()+1}月${date.getDate()}日`;
+            if (currentLang === 'zh') {
+                return `${date.getFullYear()}年${date.getMonth()+1}月${date.getDate()}日`;
+            } else {
+                return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+            }
         }
 
         function getDaysDifference(dateString) {
@@ -2062,7 +2416,12 @@
                 reminder.completed = !reminder.completed;
                 saveRemindersData();
                 loadReminders();
-                showNotification(`提醒已${reminder.completed ? '完成' : '恢复待处理'}`, 'success');
+                showNotification(
+                    currentLang === 'zh' ? 
+                    `提醒已${reminder.completed ? '完成' : '恢复待处理'}` : 
+                    `Reminder ${reminder.completed ? 'completed' : 'restored to pending'}`,
+                    'success'
+                );
             }
         };
 
@@ -2074,15 +2433,19 @@
         };
 
         window.deleteReminder = function(id) {
-            if (confirm("确定要删除这个随访提醒吗？此操作不可撤销。")) {
+            const confirmMsg = currentLang === 'zh' 
+                ? "确定要删除这个随访提醒吗？此操作不可撤销。" 
+                : "Are you sure you want to delete this follow-up reminder? This action cannot be undone.";
+            
+            if (confirm(confirmMsg)) {
                 reminders = reminders.filter(r => r.id !== id);
                 saveRemindersData();
                 loadReminders();
-                showNotification('提醒已删除', 'success');
+                showNotification(currentLang === 'zh' ? '提醒已删除' : 'Reminder deleted', 'success');
             }
         };
 
-        // 模态框功能
+        // ============ 模态框功能 ============
         const reminderModal = document.getElementById('reminder-modal');
         const addReminderBtn = document.getElementById('add-reminder-btn');
         const closeModalBtn = document.getElementById('close-modal');
@@ -2093,7 +2456,7 @@
         // 打开添加/编辑提醒模态框
         function openReminderModal(reminder = null) {
             if (reminder) {
-                modalTitle.textContent = "编辑随访提醒";
+                modalTitle.textContent = currentLang === 'zh' ? "编辑随访提醒" : "Edit Follow-up Reminder";
                 editingReminderId = reminder.id;
                 
                 document.getElementById('patient-name').value = reminder.patientName;
@@ -2102,7 +2465,7 @@
                 document.getElementById('reminder-notes').value = reminder.notes;
                 document.getElementById('priority').value = reminder.priority;
             } else {
-                modalTitle.textContent = "添加随访提醒";
+                modalTitle.textContent = currentLang === 'zh' ? "添加随访提醒" : "Add Follow-up Reminder";
                 editingReminderId = null;
                 
                 const tomorrow = new Date();
@@ -2137,11 +2500,11 @@
                 const index = reminders.findIndex(r => r.id === editingReminderId);
                 if (index !== -1) {
                     reminders[index] = newReminder;
-                    showNotification('提醒已更新', 'success');
+                    showNotification(currentLang === 'zh' ? '提醒已更新' : 'Reminder updated', 'success');
                 }
             } else {
                 reminders.push(newReminder);
-                showNotification('提醒已添加', 'success');
+                showNotification(currentLang === 'zh' ? '提醒已添加' : 'Reminder added', 'success');
             }
             
             saveRemindersData();
@@ -2149,7 +2512,7 @@
             closeReminderModal();
         }
 
-        // 语言翻译
+        // ============ 语言翻译 ============
         const translations = {
             zh: {
                 'app-title': 'AnesLink麻醉学助手',
@@ -2158,12 +2521,7 @@
                 'dictionary': '医学辞典',
                 'reminders': '随访提醒',
                 'chat-placeholder': '请输入您的问题，例如：如何处理困难气道？',
-                'send': '发送',
-                'listening': '正在聆听...',
-                'voice-not-supported': '您的浏览器不支持语音识别',
-                'tts-not-supported': '您的浏览器不支持语音合成',
-                'speak': '朗读',
-                'stop': '停止'
+                'send': '发送'
             },
             en: {
                 'app-title': 'AnesLink Anesthesia Assistant',
@@ -2172,12 +2530,7 @@
                 'dictionary': 'Medical Dictionary',
                 'reminders': 'Follow-up Reminders',
                 'chat-placeholder': 'Enter your question, e.g., How to manage difficult airway?',
-                'send': 'Send',
-                'listening': 'Listening...',
-                'voice-not-supported': 'Your browser does not support speech recognition',
-                'tts-not-supported': 'Your browser does not support text-to-speech',
-                'speak': 'Speak',
-                'stop': 'Stop'
+                'send': 'Send'
             }
         };
 
@@ -2205,15 +2558,26 @@
             
             const sendBtn = document.getElementById('send-btn');
             if (sendBtn) sendBtn.innerHTML = `<i class="fas fa-paper-plane"></i> ${translations[lang]['send']}`;
+            
+            // 更新TTS按钮文本
+            updateTTSButtonsText();
+            
+            // 更新辞典搜索框placeholder
+            const searchInput = document.getElementById('dictionary-search');
+            if (searchInput) searchInput.placeholder = lang === 'zh' ? '搜索麻醉学专业术语...' : 'Search anesthesia terms...';
+            
+            // 重新加载辞典和提醒
+            loadDictionaryTerms();
+            loadReminders();
         };
 
-        // API测试函数
+        // ============ API测试函数 ============
         window.testAPI = async function() {
             console.log('🧪 开始测试API连接...');
             
             try {
                 const functionURL = '/.netlify/functions/chat';
-                showNotification('正在测试API连接...', 'info');
+                showNotification(currentLang === 'zh' ? '正在测试API连接...' : 'Testing API connection...', 'info');
                 
                 const response = await fetch(functionURL, {
                     method: 'POST',
@@ -2228,37 +2592,39 @@
                 
                 const text = await response.text();
                 
-                let result = `🔍 API测试结果：\n`;
-                result += `✅ 状态码: ${response.status}\n`;
+                let result = `🔍 ${currentLang === 'zh' ? 'API测试结果：' : 'API Test Result:'}\n`;
+                result += `✅ ${currentLang === 'zh' ? '状态码:' : 'Status:'} ${response.status}\n`;
                 
                 try {
                     const data = JSON.parse(text);
                     if (response.ok) {
-                        result += `🎉 API连接成功！\n`;
-                        showNotification('API连接成功！', 'success');
+                        result += `🎉 ${currentLang === 'zh' ? 'API连接成功！' : 'API connection successful!'}\n`;
+                        showNotification(currentLang === 'zh' ? 'API连接成功！' : 'API connection successful!', 'success');
                     } else {
-                        result += `⚠️ API返回错误\n`;
-                        result += `错误: ${data.message || '未知错误'}\n`;
+                        result += `⚠️ ${currentLang === 'zh' ? 'API返回错误' : 'API returned error'}\n`;
+                        result += `${currentLang === 'zh' ? '错误:' : 'Error:'} ${data.message || data.error || 'unknown'}\n`;
                     }
                 } catch (e) {
-                    result += `❌ 响应不是JSON格式\n`;
-                    result += `响应: ${text.substring(0, 200)}...`;
+                    result += `❌ ${currentLang === 'zh' ? '响应不是JSON格式' : 'Response is not JSON format'}\n`;
                 }
                 
                 alert(result);
                 console.log('API测试结果:', result);
                 
             } catch (error) {
-                const errorMsg = `❌ API测试失败:\n${error.message}`;
+                const errorMsg = `❌ ${currentLang === 'zh' ? 'API测试失败:' : 'API test failed:'}\n${error.message}`;
                 alert(errorMsg);
                 console.error('API测试失败:', error);
-                showNotification('API测试失败', 'error');
+                showNotification(currentLang === 'zh' ? 'API测试失败' : 'API test failed', 'error');
             }
         };
 
-        // 初始化应用
+        // ============ 初始化应用 ============
         function initApp() {
             console.log('初始化AnesLink应用...');
+            
+            // 初始化TTS
+            initTTS();
             
             // 设置标签页
             setupTabs();
@@ -2340,8 +2706,13 @@
             // 显示欢迎消息
             setTimeout(() => {
                 if (chatHistory.length === 0) {
-                    showNotification('欢迎使用AnesLink麻醉学助手！', 'success');
+                    showNotification(currentLang === 'zh' ? '欢迎使用AnesLink麻醉学助手！' : 'Welcome to AnesLink Anesthesia Assistant!', 'success');
                 }
+                
+                // 为已存在的AI消息添加TTS按钮
+                setTimeout(() => {
+                    addTTSButtonsToAllMessages();
+                }, 500);
             }, 1000);
         }
 
