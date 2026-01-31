@@ -2,17 +2,16 @@
 const axios = require('axios');
 
 exports.handler = async function(event, context) {
-    console.log('=== Chat函数被调用 ===');
+    console.log('=== Chat函数开始执行 ===');
     
-    // CORS 处理
+    // CORS headers
     const headers = {
+        'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Content-Type': 'application/json'
+        'Access-Control-Allow-Headers': 'Content-Type'
     };
     
-    // 处理预检请求
+    // Handle OPTIONS request
     if (event.httpMethod === 'OPTIONS') {
         return {
             statusCode: 200,
@@ -21,12 +20,12 @@ exports.handler = async function(event, context) {
         };
     }
     
-    // 只处理POST请求
+    // Only accept POST requests
     if (event.httpMethod !== 'POST') {
         return {
             statusCode: 405,
             headers: headers,
-            body: JSON.stringify({ 
+            body: JSON.stringify({
                 error: 'Method not allowed',
                 message: '只支持POST请求'
             })
@@ -34,7 +33,7 @@ exports.handler = async function(event, context) {
     }
     
     try {
-        console.log('解析请求体...');
+        console.log('解析请求数据...');
         let requestData;
         try {
             requestData = JSON.parse(event.body || '{}');
@@ -42,60 +41,67 @@ exports.handler = async function(event, context) {
             return {
                 statusCode: 400,
                 headers: headers,
-                body: JSON.stringify({ 
+                body: JSON.stringify({
                     error: 'Invalid JSON',
-                    message: '无效的JSON格式'
+                    message: '请求数据格式错误'
                 })
             };
         }
         
-        const { message } = requestData;
-        console.log('收到的消息:', message);
+        const { message, language = 'zh' } = requestData;
+        console.log('用户消息:', message?.substring(0, 100));
+        console.log('请求的语言:', language);
         
         if (!message || message.trim() === '') {
             return {
                 statusCode: 400,
                 headers: headers,
-                body: JSON.stringify({ 
+                body: JSON.stringify({
                     error: 'Empty message',
                     message: '消息不能为空'
                 })
             };
         }
         
-        // 检查API密钥
+        // Check API key
         const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
-        console.log('API密钥存在:', !!DEEPSEEK_API_KEY);
+        console.log('API密钥检查:', DEEPSEEK_API_KEY ? '已设置' : '未设置');
         
         if (!DEEPSEEK_API_KEY) {
             return {
                 statusCode: 500,
                 headers: headers,
-                body: JSON.stringify({ 
+                body: JSON.stringify({
                     error: 'API key missing',
-                    message: '服务器配置错误：DEEPSEEK_API_KEY未设置',
-                    instructions: '请在Netlify环境变量中添加您的DeepSeek API密钥'
+                    message: '服务器配置错误：请设置DEEPSEEK_API_KEY环境变量',
+                    instructions: '在Netlify控制台的Environment Variables中添加DEEPSEEK_API_KEY'
                 })
             };
         }
         
-        // 检测语言
-        const isEnglish = message.match(/[a-zA-Z]/g)?.length > 5 && !message.match(/[\u4e00-\u9fa5]/g);
-        const language = isEnglish ? 'en' : 'zh';
-        console.log('检测到的语言:', language);
+        // Determine language for response
+        const responseLanguage = language === 'en' ? 'en' : 'zh';
+        console.log('响应语言:', responseLanguage);
         
-        // 准备系统提示
-        const systemPrompt = language === 'en' 
-            ? "You are an anesthesiology assistant. Answer all questions in English. Be professional and helpful."
-            : "你是麻醉学助手。请用中文回答所有问题。要专业且有帮助。";
+        // Prepare system prompt based on language
+        const systemPrompt = responseLanguage === 'en' 
+            ? "You are AnesLink Anesthesia Assistant. You MUST answer in English. Provide professional anesthesia knowledge including drug dosages, techniques, complications, and patient management. Be concise and accurate."
+            : "你是AnesLink麻醉学助手。你必须用中文回答。提供专业的麻醉学知识，包括药物剂量、技术操作、并发症处理和患者管理。回答要简洁准确。";
         
-        // 构建请求
+        // Build messages
         const messages = [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: message }
+            {
+                role: 'system',
+                content: systemPrompt
+            },
+            {
+                role: 'user',
+                content: message
+            }
         ];
         
         console.log('调用DeepSeek API...');
+        console.log('请求消息数量:', messages.length);
         
         try {
             const response = await axios.post(
@@ -104,45 +110,61 @@ exports.handler = async function(event, context) {
                     model: 'deepseek-chat',
                     messages: messages,
                     temperature: 0.7,
-                    max_tokens: 1000
+                    max_tokens: 1000,
+                    stream: false
                 },
                 {
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
                     },
-                    timeout: 15000
+                    timeout: 30000
                 }
             );
             
-            console.log('API响应成功');
+            console.log('API响应状态:', response.status);
             
-            const aiResponse = response.data.choices[0]?.message?.content || '抱歉，我无法回答这个问题。';
+            if (!response.data || !response.data.choices || !response.data.choices[0]) {
+                console.error('API返回数据格式错误:', response.data);
+                throw new Error('API返回格式异常');
+            }
+            
+            const aiResponse = response.data.choices[0].message.content;
+            console.log('AI回复长度:', aiResponse.length);
+            console.log('AI回复预览:', aiResponse.substring(0, 100));
             
             return {
                 statusCode: 200,
                 headers: headers,
                 body: JSON.stringify({
+                    success: true,
                     response: aiResponse,
-                    success: true
+                    language: responseLanguage,
+                    model: response.data.model
                 })
             };
             
         } catch (apiError) {
-            console.error('API调用错误:', apiError.message);
+            console.error('DeepSeek API调用失败:', apiError.message);
             
-            // 提供备用回复
-            const fallbackResponse = language === 'en'
-                ? `I'm currently having trouble connecting to the AI service. For anesthesiology questions, please try:\n\n1. What is the induction dose of propofol?\n2. How to manage difficult airway?\n3. How to prevent postoperative nausea and vomiting?\n\nError: ${apiError.message}`
-                : `我目前无法连接到AI服务。关于麻醉学问题，请尝试询问：\n\n1. 丙泊酚的诱导剂量是多少？\n2. 如何处理困难气道？\n3. 如何预防术后恶心呕吐？\n\n错误：${apiError.message}`;
+            if (apiError.response) {
+                console.error('API错误状态:', apiError.response.status);
+                console.error('API错误数据:', apiError.response.data);
+            }
+            
+            // 提供简单的备用回复
+            const fallbackResponse = responseLanguage === 'en'
+                ? "I apologize, but I'm currently unable to connect to the AI service. This could be due to:\n\n1. Network connection issues\n2. API service temporary unavailability\n3. Configuration problems\n\nPlease try again in a few moments, or contact the system administrator."
+                : "抱歉，我目前无法连接到AI服务。可能的原因：\n\n1. 网络连接问题\n2. API服务暂时不可用\n3. 配置问题\n\n请稍后重试，或联系系统管理员。";
             
             return {
                 statusCode: 200,
                 headers: headers,
                 body: JSON.stringify({
-                    response: fallbackResponse,
                     success: false,
-                    error: apiError.message
+                    response: fallbackResponse,
+                    error: apiError.message,
+                    language: responseLanguage
                 })
             };
         }
@@ -155,7 +177,8 @@ exports.handler = async function(event, context) {
             headers: headers,
             body: JSON.stringify({
                 error: 'Internal server error',
-                message: '服务器内部错误: ' + error.message
+                message: '服务器内部错误',
+                details: error.message
             })
         };
     }
