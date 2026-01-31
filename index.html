@@ -1453,6 +1453,13 @@
             chatMessages.appendChild(messageDiv);
             chatMessages.scrollTop = chatMessages.scrollHeight;
             
+            // 为AI消息添加TTS按钮
+            if (!isUser && !isLoading) {
+                setTimeout(() => {
+                    addTTSButton(messageDiv);
+                }, 100);
+            }
+            
             return messageDiv;
         }
 
@@ -2518,28 +2525,57 @@
 
         // ============ TTS文本转语音功能 ============
         let currentUtterance = null;
+        let isSpeaking = false;
 
         // 为AI消息添加TTS按钮
         function addTTSButton(messageElement) {
             // 只为AI助手消息添加TTS按钮
             if (messageElement.classList.contains('assistant')) {
+                const messageContent = messageElement.querySelector('.message-content');
+                if (!messageContent) return;
+                
+                // 检查是否已存在TTS按钮
+                if (messageContent.nextElementSibling && 
+                    messageContent.nextElementSibling.classList.contains('tts-container')) {
+                    return;
+                }
+                
+                const ttsContainer = document.createElement('div');
+                ttsContainer.className = 'tts-container';
+                ttsContainer.style.marginTop = '10px';
+                ttsContainer.style.textAlign = 'right';
+                
                 const ttsBtn = document.createElement('button');
                 ttsBtn.className = 'tts-btn';
                 ttsBtn.innerHTML = '<i class="fas fa-volume-up"></i> ' + translations[currentLang]['speak'];
-                ttsBtn.onclick = function() {
-                    speakText(messageElement.querySelector('.message-content').innerText, ttsBtn);
+                
+                ttsBtn.onclick = function(e) {
+                    e.stopPropagation();
+                    const text = messageContent.innerText || messageContent.textContent;
+                    speakText(text, ttsBtn);
                 };
-                messageElement.appendChild(ttsBtn);
+                
+                ttsContainer.appendChild(ttsBtn);
+                
+                // 将TTS按钮添加到消息内容后面
+                messageContent.parentNode.insertBefore(ttsContainer, messageContent.nextSibling);
             }
         }
 
         function speakText(text, button) {
             if ('speechSynthesis' in window) {
                 // 如果正在播放，则停止
-                if (currentUtterance && speechSynthesis.speaking) {
+                if (isSpeaking) {
                     speechSynthesis.cancel();
+                    isSpeaking = false;
                     button.classList.remove('playing');
                     button.innerHTML = '<i class="fas fa-volume-up"></i> ' + translations[currentLang]['speak'];
+                    
+                    // 重置所有TTS按钮状态
+                    document.querySelectorAll('.tts-btn.playing').forEach(btn => {
+                        btn.classList.remove('playing');
+                        btn.innerHTML = '<i class="fas fa-volume-up"></i> ' + translations[currentLang]['speak'];
+                    });
                     return;
                 }
                 
@@ -2552,40 +2588,40 @@
                 currentUtterance.pitch = 1.0;
                 
                 currentUtterance.onstart = () => {
+                    isSpeaking = true;
                     button.classList.add('playing');
                     button.innerHTML = '<i class="fas fa-stop"></i> ' + translations[currentLang]['stop'];
                 };
                 
                 currentUtterance.onend = () => {
+                    isSpeaking = false;
                     button.classList.remove('playing');
                     button.innerHTML = '<i class="fas fa-volume-up"></i> ' + translations[currentLang]['speak'];
                 };
                 
+                currentUtterance.onerror = () => {
+                    isSpeaking = false;
+                    button.classList.remove('playing');
+                    button.innerHTML = '<i class="fas fa-volume-up"></i> ' + translations[currentLang]['speak'];
+                };
+                
+                // 停止任何正在播放的语音
+                speechSynthesis.cancel();
+                
+                // 开始播放
                 speechSynthesis.speak(currentUtterance);
             } else {
                 showNotification(translations[currentLang]['tts-not-supported'], 'error');
             }
         }
 
-        // 修改displayMessage函数，为AI消息添加TTS按钮
-        const originalDisplayMessage = window.displayMessage;
-        window.displayMessage = function(message, isUser) {
-            originalDisplayMessage(message, isUser);
-            
-            // 为最新的AI消息添加TTS按钮
-            if (!isUser) {
-                const messages = document.querySelectorAll('.message.assistant');
-                const lastMessage = messages[messages.length - 1];
-                if (lastMessage && !lastMessage.querySelector('.tts-btn')) {
-                    addTTSButton(lastMessage);
-                }
-            }
-        };
-
         // 页面加载后为已存在的AI消息添加TTS按钮
         setTimeout(() => {
             document.querySelectorAll('.message.assistant').forEach(msg => {
-                if (!msg.querySelector('.tts-btn')) {
+                const hasTTSButton = msg.querySelector('.tts-container') || 
+                                   msg.querySelector('.message-content')?.nextElementSibling?.classList.contains('tts-btn');
+                
+                if (!hasTTSButton) {
                     addTTSButton(msg);
                 }
             });
