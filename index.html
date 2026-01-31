@@ -3,2783 +3,991 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AnesLink麻醉学助手</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚕️</text></svg>">
+    <title>AnesLink麻醉助手</title>
     <style>
-        :root {
-            --primary-color: #2a6ecc;
-            --secondary-color: #1a4d8c;
-            --accent-color: #4cc9f0;
-            --light-color: #f5f9ff;
-            --dark-color: #1a1a2e;
-            --success-color: #2ecc71;
-            --warning-color: #f39c12;
-            --danger-color: #e74c3c;
-            --gray-color: #7f8c8d;
-            --border-radius: 10px;
-            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            --transition: all 0.3s ease;
-        }
-
+        /* 重置和基础样式 */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
         }
-
+        
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+            background: linear-gradient(135deg, #1a237e 0%, #0d47a1 100%);
             color: #333;
             line-height: 1.6;
             min-height: 100vh;
         }
-
-        .container {
+        
+        /* 顶部导航栏 */
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .nav-container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 20px;
-        }
-
-        /* 头部样式 */
-        header {
-            background: rgba(255, 255, 255, 0.95);
-            color: var(--dark-color);
-            padding: 25px 0;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            margin-bottom: 30px;
-            backdrop-filter: blur(10px);
-        }
-
-        .header-content {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 20px;
         }
-
+        
         .logo {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 12px;
         }
-
-        .logo i {
-            font-size: 2.5rem;
-            color: var(--primary-color);
-        }
-
+        
         .logo h1 {
-            font-size: 2.2rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .header-info {
-            text-align: right;
-            font-size: 0.9rem;
-            color: var(--gray-color);
-        }
-
-        .header-info p {
-            margin: 5px 0;
-        }
-
-        /* 标签页样式 */
-        .tabs {
-            display: flex;
-            background-color: white;
-            border-radius: var(--border-radius);
-            overflow: hidden;
-            box-shadow: var(--shadow);
-            margin-bottom: 30px;
-        }
-
-        .tab {
-            flex: 1;
-            text-align: center;
-            padding: 20px;
-            font-size: 1.1rem;
+            color: #1a237e;
+            font-size: 24px;
             font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            border-bottom: 3px solid transparent;
-            color: var(--gray-color);
         }
-
-        .tab:hover {
-            background-color: rgba(42, 110, 204, 0.05);
-            color: var(--primary-color);
+        
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            list-style: none;
         }
-
-        .tab.active {
-            color: var(--primary-color);
-            border-bottom: 3px solid var(--primary-color);
-            background-color: rgba(42, 110, 204, 0.08);
+        
+        .nav-links a {
+            text-decoration: none;
+            color: #555;
+            font-weight: 500;
+            font-size: 16px;
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: all 0.3s;
         }
-
-        /* 内容区域样式 */
-        .content {
-            display: none;
-            background-color: rgba(255, 255, 255, 0.95);
-            border-radius: var(--border-radius);
+        
+        .nav-links a:hover,
+        .nav-links a.active {
+            background: #1a237e;
+            color: white;
+        }
+        
+        /* 主容器 */
+        .main-container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        
+        /* 头部横幅 */
+        .header-banner {
+            text-align: center;
+            margin-bottom: 40px;
             padding: 30px;
-            box-shadow: var(--shadow);
-            min-height: 500px;
-            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
         }
-
-        .content.active {
-            display: block;
-            animation: fadeIn 0.5s ease;
+        
+        .header-banner h2 {
+            color: #1a237e;
+            font-size: 32px;
+            margin-bottom: 10px;
         }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        
+        .header-banner .subtitle {
+            color: #666;
+            font-size: 18px;
+            margin-bottom: 20px;
         }
-
-        /* AI助手样式 */
-        .ai-chat-container {
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: linear-gradient(135deg, #00bcd4 0%, #0097a7 100%);
+            color: white;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        /* AI助手主区域 */
+        .ai-assistant-container {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        @media (max-width: 992px) {
+            .ai-assistant-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* 左侧功能简介 */
+        .intro-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            height: fit-content;
+        }
+        
+        .intro-card h3 {
+            color: #1a237e;
+            margin-bottom: 20px;
+            font-size: 22px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e8eaf6;
+        }
+        
+        .intro-content {
+            font-size: 16px;
+            color: #555;
+            line-height: 1.8;
+        }
+        
+        .feature-list {
+            list-style: none;
+            margin-top: 20px;
+        }
+        
+        .feature-list li {
+            margin-bottom: 12px;
+            padding-left: 25px;
+            position: relative;
+        }
+        
+        .feature-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #4caf50;
+            font-weight: bold;
+        }
+        
+        /* 聊天主区域 */
+        .chat-main {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
             display: flex;
             flex-direction: column;
             height: 600px;
         }
-
-        .chat-header {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #eef2ff;
-        }
-
-        .chat-header i {
-            font-size: 1.8rem;
-            color: var(--primary-color);
-        }
-
-        .chat-header h2 {
-            color: var(--dark-color);
-            font-size: 1.8rem;
-        }
-
+        
+        /* 聊天消息区域 */
         .chat-messages {
             flex: 1;
             overflow-y: auto;
-            padding: 20px;
-            background-color: #f9fbff;
-            border-radius: var(--border-radius);
-            margin-bottom: 20px;
-            border: 1px solid #e0e7ff;
+            padding: 25px;
+            background: #f8f9fa;
         }
-
+        
         .message {
             margin-bottom: 20px;
-            max-width: 85%;
-            animation: slideIn 0.3s ease;
+            animation: fadeIn 0.3s ease;
         }
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateX(-10px); }
-            to { opacity: 1; transform: translateX(0); }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-
-        .message.user {
-            margin-left: auto;
-        }
-
-        .message-content {
+        
+        .message.assistant {
+            background: white;
             padding: 20px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            line-height: 1.8;
-            word-wrap: break-word;
+            border-radius: 12px;
+            border-left: 4px solid #1a237e;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
-
-        .message.user .message-content {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            border-top-right-radius: 5px;
+        
+        .message.user {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid #2196f3;
+            margin-left: auto;
+            max-width: 80%;
         }
-
-        .message.assistant .message-content {
-            background-color: white;
-            border: 1px solid #e0e7ff;
-            border-top-left-radius: 5px;
-        }
-
-        .message.assistant .message-content h3 {
-            color: var(--primary-color);
-            margin: 15px 0 10px 0;
-            padding-bottom: 8px;
-            border-bottom: 2px solid #eef2ff;
-        }
-
-        .message.assistant .message-content h4 {
-            color: var(--secondary-color);
-            margin: 12px 0 8px 0;
-        }
-
-        .message.assistant .message-content strong {
-            color: var(--primary-color);
-        }
-
-        .message.assistant .message-content ul {
-            margin: 10px 0;
-            padding-left: 25px;
-        }
-
-        .message.assistant .message-content li {
-            margin: 8px 0;
-        }
-
+        
         .message-header {
             display: flex;
             align-items: center;
-            gap: 10px;
-            margin-bottom: 8px;
-            font-size: 0.9rem;
-            color: var(--gray-color);
+            margin-bottom: 12px;
+            color: #1a237e;
+            font-weight: 600;
+            font-size: 16px;
         }
-
-        .user .message-header {
-            justify-content: flex-end;
-        }
-
+        
         .message-header i {
-            font-size: 1.2rem;
+            margin-right: 10px;
+            font-size: 18px;
         }
-
-        .message.assistant .message-header i {
-            color: var(--primary-color);
+        
+        .message-content {
+            line-height: 1.7;
+            white-space: pre-line;
+            color: #444;
         }
-
-        .message.user .message-header i {
-            color: var(--accent-color);
-        }
-
-        /* TTS容器样式 */
-        .tts-container {
-            margin-top: 15px;
+        
+        /* TTS控制区域 - 修复的重点 */
+        .tts-controls {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
             display: flex;
             align-items: center;
             gap: 12px;
             flex-wrap: wrap;
-            padding: 10px;
-            background: rgba(240, 245, 255, 0.5);
-            border-radius: var(--border-radius);
-            border: 1px solid #e0e7ff;
         }
-
-        .tts-btn {
-            background: linear-gradient(135deg, var(--accent-color), #3a9fc7);
-            color: white;
-            border: none;
-            border-radius: var(--border-radius);
+        
+        .tts-btn, .tts-stop-btn {
             padding: 8px 16px;
-            font-size: 0.9rem;
-            font-weight: 600;
+            border: none;
+            border-radius: 6px;
+            background: #1a237e;
+            color: white;
             cursor: pointer;
-            transition: var(--transition);
+            font-size: 14px;
             display: inline-flex;
             align-items: center;
             gap: 8px;
+            transition: all 0.3s;
         }
-
+        
         .tts-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(76, 201, 240, 0.3);
+            background: #283593;
+            transform: translateY(-1px);
         }
-
+        
         .tts-btn.playing {
-            background: linear-gradient(135deg, var(--success-color), #27ae60);
+            background: #4caf50;
         }
-
+        
         .tts-stop-btn {
-            background: linear-gradient(135deg, var(--danger-color), #c0392b);
-            color: white;
-            border: none;
-            border-radius: var(--border-radius);
-            padding: 8px 16px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
+            background: #f44336;
+            display: none;
         }
-
+        
         .tts-stop-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+            background: #d32f2f;
         }
-
+        
         .tts-lang-select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
             background: white;
-            border: 2px solid #e0e7ff;
-            color: var(--dark-color);
-            border-radius: var(--border-radius);
-            padding: 7px 12px;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: var(--transition);
+            font-size: 14px;
+            min-width: 140px;
         }
-
-        .tts-lang-select:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(42, 110, 204, 0.2);
-        }
-
-        .tts-speed-control {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 5px 12px;
+        
+        /* 输入区域 */
+        .input-container {
+            padding: 25px;
             background: white;
-            border-radius: var(--border-radius);
-            border: 1px solid #e0e7ff;
+            border-top: 1px solid #e8eaf6;
         }
-
-        .tts-speed-control input[type="range"] {
-            -webkit-appearance: none;
-            width: 80px;
-            height: 6px;
-            background: #e0e7ff;
-            border-radius: 3px;
-            outline: none;
-        }
-
-        .tts-speed-control input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 16px;
-            height: 16px;
-            background: var(--primary-color);
-            border-radius: 50%;
-            cursor: pointer;
-        }
-
-        .chat-input-area {
+        
+        .input-wrapper {
             display: flex;
-            gap: 10px;
-            align-items: flex-end;
+            gap: 15px;
         }
-
-        .chat-input {
+        
+        #message-input {
             flex: 1;
-            padding: 15px;
-            border: 2px solid #ddd;
-            border-radius: var(--border-radius);
-            font-size: 1rem;
-            resize: none;
-            height: 80px;
-            transition: var(--transition);
-            background: white;
+            padding: 16px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
         }
-
-        .chat-input:focus {
+        
+        #message-input:focus {
             outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(42, 110, 204, 0.2);
+            border-color: #1a237e;
         }
-
-        .send-btn {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        
+        #send-btn {
+            padding: 16px 32px;
+            background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
             color: white;
             border: none;
-            border-radius: var(--border-radius);
-            padding: 15px 30px;
-            font-size: 1rem;
-            font-weight: 600;
+            border-radius: 10px;
             cursor: pointer;
-            transition: var(--transition);
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
             display: flex;
             align-items: center;
             gap: 10px;
-            height: 80px;
         }
-
-        .send-btn:hover {
+        
+        #send-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(42, 110, 204, 0.3);
+            box-shadow: 0 5px 15px rgba(26, 35, 126, 0.3);
         }
-
-        .send-btn:disabled {
+        
+        #send-btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
             transform: none;
         }
-
-        /* 医学辞典样式 */
-        .dictionary-container {
-            display: flex;
-            flex-direction: column;
-            gap: 30px;
-        }
-
-        .dictionary-header {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 10px;
-        }
-
-        .dictionary-header i {
-            font-size: 1.8rem;
-            color: var(--primary-color);
-        }
-
-        .dictionary-controls {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-            flex-wrap: wrap;
-            margin-bottom: 20px;
-        }
-
-        .search-box {
-            flex: 1;
-            min-width: 300px;
-            position: relative;
-        }
-
-        .search-input {
-            width: 100%;
-            padding: 15px 15px 15px 45px;
-            border: 2px solid #ddd;
-            border-radius: var(--border-radius);
-            font-size: 1rem;
-            transition: var(--transition);
-        }
-
-        .search-input:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(42, 110, 204, 0.2);
-        }
-
-        .search-icon {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--gray-color);
-        }
-
-        .language-toggle {
-            display: flex;
-            background-color: #f0f5ff;
-            border-radius: var(--border-radius);
-            overflow: hidden;
-            border: 2px solid #e0e7ff;
-        }
-
-        .lang-btn {
-            padding: 12px 25px;
-            background: none;
-            border: none;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            color: var(--gray-color);
-        }
-
-        .lang-btn:hover {
-            background-color: rgba(42, 110, 204, 0.1);
-            color: var(--primary-color);
-        }
-
-        .lang-btn.active {
-            background-color: var(--primary-color);
-            color: white;
-        }
-
-        .dictionary-results {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-        }
-
-        @media (max-width: 768px) {
-            .dictionary-results {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .term-section {
-            background-color: #f9fbff;
-            border-radius: var(--border-radius);
-            padding: 25px;
-            box-shadow: var(--shadow);
-            border: 1px solid #e0e7ff;
-        }
-
-        .term-section h3 {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 20px;
-            color: var(--primary-color);
-            padding-bottom: 10px;
-            border-bottom: 2px solid #eef2ff;
-            font-size: 1.4rem;
-        }
-
-        .term-section h3 i {
-            color: var(--accent-color);
-        }
-
-        .term-list {
-            list-style-type: none;
-        }
-
-        .term-item {
-            padding: 15px 0;
-            border-bottom: 1px solid #eee;
-            transition: var(--transition);
-            position: relative;
-        }
-
-        .term-item:hover {
-            background-color: rgba(42, 110, 204, 0.05);
-            padding-left: 10px;
-            padding-right: 10px;
-            margin-left: -10px;
-            margin-right: -10px;
-            border-radius: 5px;
-        }
-
-        .term-item:last-child {
-            border-bottom: none;
-        }
-
-        .term {
-            font-weight: 600;
-            margin-bottom: 5px;
-            color: var(--dark-color);
-            font-size: 1.1rem;
-        }
-
-        .translation {
-            color: var(--gray-color);
-            margin-bottom: 8px;
-        }
-
-        /* 辞典术语TTS按钮 */
-        .tts-term-btn {
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: var(--primary-color);
-            cursor: pointer;
-            font-size: 0.9rem;
-            opacity: 0.6;
-            transition: var(--transition);
-        }
-
-        .term-item:hover .tts-term-btn {
-            opacity: 1;
-        }
-
-        .tts-term-btn:hover {
-            color: var(--accent-color);
-        }
-
-        .reference-links {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 2px solid #eef2ff;
-        }
-
-        .reference-links h4 {
-            color: var(--primary-color);
-            margin-bottom: 15px;
-            font-size: 1.2rem;
-        }
-
-        .links-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 15px;
-        }
-
-        .external-link {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 15px;
-            background: white;
-            border-radius: var(--border-radius);
-            text-decoration: none;
-            color: var(--dark-color);
-            border: 2px solid #e0e7ff;
-            transition: var(--transition);
-        }
-
-        .external-link:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow);
-            border-color: var(--primary-color);
-            background: linear-gradient(135deg, #f8faff, #f0f5ff);
-        }
-
-        .external-link i {
-            font-size: 1.2rem;
-            color: var(--primary-color);
-        }
-
-        .link-content {
-            flex: 1;
-        }
-
-        .link-title {
-            font-weight: 600;
-            margin-bottom: 5px;
-            color: var(--dark-color);
-        }
-
-        .link-desc {
-            font-size: 0.85rem;
-            color: var(--gray-color);
-            line-height: 1.4;
-        }
-
-        /* 随访提醒样式 */
-        .reminder-container {
-            display: flex;
-            flex-direction: column;
-            gap: 30px;
-        }
-
-        .reminder-header {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 10px;
-        }
-
-        .reminder-header i {
-            font-size: 1.8rem;
-            color: var(--primary-color);
-        }
-
-        .reminder-actions {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .add-reminder-btn {
-            background: linear-gradient(135deg, var(--success-color), #27ae60);
-            color: white;
-            border: none;
-            border-radius: var(--border-radius);
-            padding: 12px 25px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .add-reminder-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(46, 204, 113, 0.3);
-        }
-
-        .filter-options {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .filter-btn {
-            padding: 10px 20px;
-            background-color: #f0f5ff;
-            border: 2px solid #e0e7ff;
-            border-radius: var(--border-radius);
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            color: var(--gray-color);
-        }
-
-        .filter-btn:hover {
-            background-color: rgba(42, 110, 204, 0.1);
-            color: var(--primary-color);
-            border-color: var(--primary-color);
-        }
-
-        .filter-btn.active {
-            background-color: var(--primary-color);
-            color: white;
-            border-color: var(--primary-color);
-        }
-
-        .reminder-list {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .reminder-card {
-            background-color: #f9fbff;
-            border-radius: var(--border-radius);
-            padding: 25px;
-            box-shadow: var(--shadow);
-            border-left: 5px solid var(--primary-color);
-            transition: var(--transition);
-            border: 1px solid #e0e7ff;
-        }
-
-        .reminder-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-        }
-
-        .reminder-card.urgent {
-            border-left-color: var(--danger-color);
-            background: linear-gradient(135deg, #fff5f5, #fff);
-        }
-
-        .reminder-card.upcoming {
-            border-left-color: var(--warning-color);
-            background: linear-gradient(135deg, #fff9f0, #fff);
-        }
-
-        .reminder-card.completed {
-            border-left-color: var(--success-color);
-            background: linear-gradient(135deg, #f0fff4, #fff);
-            opacity: 0.9;
-        }
-
-        .reminder-title {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .reminder-title h3 {
-            color: var(--dark-color);
-            font-size: 1.3rem;
-        }
-
-        .reminder-status {
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-
-        .urgent .reminder-status {
-            background-color: rgba(231, 76, 60, 0.1);
-            color: var(--danger-color);
-            border: 1px solid rgba(231, 76, 60, 0.2);
-        }
-
-        .upcoming .reminder-status {
-            background-color: rgba(243, 156, 18, 0.1);
-            color: var(--warning-color);
-            border: 1px solid rgba(243, 156, 18, 0.2);
-        }
-
-        .completed .reminder-status {
-            background-color: rgba(46, 204, 113, 0.1);
-            color: var(--success-color);
-            border: 1px solid rgba(46, 204, 113, 0.2);
-        }
-
-        .reminder-details {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .detail-item {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .detail-label {
-            font-size: 0.9rem;
-            color: var(--gray-color);
-            margin-bottom: 5px;
-            font-weight: 500;
-        }
-
-        .reminder-actions-card {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .action-btn {
-            padding: 8px 15px;
-            border-radius: var(--border-radius);
-            border: 2px solid transparent;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .complete-btn {
-            background-color: rgba(46, 204, 113, 0.1);
-            color: var(--success-color);
-            border-color: rgba(46, 204, 113, 0.2);
-        }
-
-        .complete-btn:hover {
-            background-color: var(--success-color);
-            color: white;
-            border-color: var(--success-color);
-        }
-
-        .edit-btn {
-            background-color: rgba(52, 152, 219, 0.1);
-            color: var(--primary-color);
-            border-color: rgba(52, 152, 219, 0.2);
-        }
-
-        .edit-btn:hover {
-            background-color: var(--primary-color);
-            color: white;
-            border-color: var(--primary-color);
-        }
-
-        .delete-btn {
-            background-color: rgba(231, 76, 60, 0.1);
-            color: var(--danger-color);
-            border-color: rgba(231, 76, 60, 0.2);
-        }
-
-        .delete-btn:hover {
-            background-color: var(--danger-color);
-            color: white;
-            border-color: var(--danger-color);
-        }
-
-        /* 模态框样式 */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(5px);
-        }
-
-        .modal.active {
-            display: flex;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .modal-content {
-            background-color: white;
-            width: 90%;
-            max-width: 500px;
-            border-radius: var(--border-radius);
-            padding: 30px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-            animation: slideUp 0.3s ease;
-        }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-        }
-
-        .modal-header h2 {
-            color: var(--dark-color);
-            font-size: 1.5rem;
-        }
-
-        .close-modal {
-            background: none;
-            border: none;
-            font-size: 1.8rem;
-            cursor: pointer;
-            color: var(--gray-color);
-            transition: var(--transition);
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-        }
-
-        .close-modal:hover {
-            background-color: #f5f5f5;
-            color: var(--danger-color);
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: var(--dark-color);
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #ddd;
-            border-radius: var(--border-radius);
-            font-size: 1rem;
-            transition: var(--transition);
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(42, 110, 204, 0.2);
-        }
-
-        .modal-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 15px;
-            margin-top: 30px;
-        }
-
-        .btn {
-            padding: 12px 25px;
-            border-radius: var(--border-radius);
-            font-weight: 600;
-            cursor: pointer;
-            border: none;
-            transition: var(--transition);
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(42, 110, 204, 0.3);
-        }
-
-        .btn-secondary {
-            background-color: #f0f5ff;
-            color: var(--dark-color);
-            border: 2px solid #e0e7ff;
-        }
-
-        .btn-secondary:hover {
-            background-color: #e0e7ff;
-        }
-
-        /* 页脚样式 */
-        footer {
+        
+        /* 提示文本 */
+        .hint-text {
             text-align: center;
-            margin-top: 40px;
-            padding: 25px;
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 0.9rem;
-            border-radius: var(--border-radius);
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #666;
+            font-size: 14px;
+            margin-top: 15px;
+            font-style: italic;
         }
-
-        .footer-highlight {
+        
+        /* 底部信息 */
+        .footer {
+            text-align: center;
+            padding: 30px;
             color: white;
-            font-weight: 600;
+            font-size: 14px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            margin-top: 40px;
         }
-
-        /* 响应式设计 */
-        @media (max-width: 768px) {
-            .header-content {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 15px;
-            }
-            
-            .header-info {
-                text-align: left;
-            }
-            
-            .tabs {
-                flex-direction: column;
-            }
-            
-            .chat-input-area {
-                flex-direction: column;
-            }
-            
-            .send-btn {
-                width: 100%;
-                padding: 15px;
-                height: auto;
-            }
-            
-            .reminder-actions {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            
-            .filter-options {
-                width: 100%;
-                justify-content: space-between;
-            }
-            
-            .reminder-details {
-                grid-template-columns: 1fr;
-            }
-            
-            .modal-content {
-                width: 95%;
-                padding: 20px;
-            }
-            
-            .tts-container {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            
-            .tts-speed-control {
-                width: 100%;
-            }
+        
+        .footer a {
+            color: #bbdefb;
+            text-decoration: none;
         }
-
-        /* 滚动条样式 */
-        ::-webkit-scrollbar {
-            width: 8px;
+        
+        .footer a:hover {
+            text-decoration: underline;
         }
-
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 4px;
+        
+        .disclaimer {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            font-size: 13px;
         }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--primary-color);
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--secondary-color);
-        }
-
+        
         /* 加载动画 */
         .loading {
             display: inline-block;
             width: 20px;
             height: 20px;
-            border: 3px solid rgba(42, 110, 204, 0.3);
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #1a237e;
             border-radius: 50%;
-            border-top-color: var(--primary-color);
-            animation: spin 1s ease-in-out infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* 语言切换按钮 */
-        .language-toggle {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 10px 15px;
-            border-radius: 25px;
-            box-shadow: var(--shadow);
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            backdrop-filter: blur(10px);
-        }
-
-        .language-toggle button {
-            background: none;
-            border: 2px solid var(--primary-color);
-            color: var(--primary-color);
-            padding: 5px 12px;
-            border-radius: 15px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            font-weight: 600;
-            transition: var(--transition);
-        }
-
-        .language-toggle button.active {
-            background: var(--primary-color);
-            color: white;
-        }
-
-        .language-toggle button:hover {
-            transform: scale(1.05);
-        }
-
-        /* 语音按钮样式 */
-        .voice-btn {
-            background: linear-gradient(135deg, var(--accent-color), #3a9fc7);
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 1.2rem;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 48px;
-            height: 48px;
-        }
-
-        .voice-btn:hover {
-            transform: scale(1.1);
-            box-shadow: 0 4px 12px rgba(76, 201, 240, 0.3);
-        }
-
-        .voice-btn.recording {
-            background: var(--danger-color);
-            animation: pulse 1s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(1.1);
-            }
-        }
-
-        /* 通知样式 */
-        .notification {
-            position: fixed;
-            top: 80px;
-            right: 20px;
-            padding: 15px 25px;
-            border-radius: var(--border-radius);
-            background: white;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            display: none;
-            align-items: center;
-            gap: 10px;
-            z-index: 2000;
-            animation: slideInRight 0.3s ease;
-            border-left: 4px solid var(--primary-color);
-        }
-
-        .notification.active {
-            display: flex;
-        }
-
-        .notification.success {
-            border-left-color: var(--success-color);
-        }
-
-        .notification.error {
-            border-left-color: var(--danger-color);
-        }
-
-        @keyframes slideInRight {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
-        .notification.success {
-            border-left-color: var(--success-color);
-        }
-
-        .notification.error {
-            border-left-color: var(--danger-color);
-        }
-
-        .notification.warning {
-            border-left-color: var(--warning-color);
-        }
-
-        /* 调试按钮 */
-        .debug-btn {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #ff6b6b;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            font-size: 12px;
-            cursor: pointer;
-            z-index: 1000;
-            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
+            animation: spin 1s linear infinite;
         }
         
-        .debug-btn:hover {
-            transform: scale(1.1);
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .nav-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .nav-links {
+                gap: 15px;
+            }
+            
+            .header-banner h2 {
+                font-size: 24px;
+            }
+            
+            .ai-assistant-container {
+                gap: 20px;
+            }
+            
+            .chat-main {
+                height: 500px;
+            }
+            
+            .tts-controls {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .input-wrapper {
+                flex-direction: column;
+            }
+            
+            #send-btn {
+                width: 100%;
+                justify-content: center;
+            }
         }
     </style>
+    <!-- Font Awesome 图标 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <!-- 语言切换 -->
-    <div class="language-toggle">
-        <button id="lang-zh" class="active" onclick="window.switchLanguage('zh')">中文</button>
-        <button id="lang-en" onclick="window.switchLanguage('en')">English</button>
-    </div>
-
-    <!-- 通知 -->
-    <div id="notification" class="notification">
-        <i class="fas fa-check-circle"></i>
-        <span id="notification-text"></span>
-    </div>
-
-    <header>
-        <div class="container">
-            <div class="header-content">
-                <div class="logo">
-                    <i class="fas fa-stethoscope"></i>
-                    <h1>AnesLink麻醉学助手</h1>
-                </div>
-                <div class="header-info">
-                    <p>专为麻醉科医生设计的智能助手</p>
-                    <p>AI助手 | 医学辞典 | 随访提醒</p>
-                </div>
+    <!-- 顶部导航栏 -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <i class="fas fa-stethoscope" style="color: #1a237e; font-size: 28px;"></i>
+                <h1>AnesLink麻醉助手</h1>
             </div>
+            <ul class="nav-links">
+                <li><a href="#" class="active">首页</a></li>
+                <li><a href="#">医学资料库</a></li>
+                <li><a href="#">随访提醒</a></li>
+            </ul>
         </div>
-    </header>
+    </nav>
 
-    <main class="container">
-        <div class="tabs">
-            <div class="tab active" data-tab="ai-assistant">
-                <i class="fas fa-robot"></i> AI助手
-            </div>
-            <div class="tab" data-tab="dictionary">
-                <i class="fas fa-book-medical"></i> 医学辞典
-            </div>
-            <div class="tab" data-tab="reminders">
-                <i class="fas fa-bell"></i> 随访提醒
-            </div>
+    <!-- 主内容区 -->
+    <div class="main-container">
+        <!-- 头部横幅 -->
+        <div class="header-banner">
+            <h2>AnesLink AI助手 <span class="badge">基于DeepSeek</span></h2>
+            <p class="subtitle">专为麻醉科医生设计的智能助手</p>
         </div>
 
-        <!-- AI助手 -->
-        <section id="ai-assistant" class="content active">
-            <div class="ai-chat-container">
-                <div class="chat-header">
-                    <i class="fas fa-comments"></i>
-                    <h2>AnesLink AI助手 (基于DeepSeek)</h2>
+        <!-- AI助手主区域 -->
+        <div class="ai-assistant-container">
+            <!-- 左侧功能简介 -->
+            <div class="intro-card">
+                <h3>AI助手</h3>
+                <div class="intro-content">
+                    <p><strong>您好！我是AnesLink AI助手</strong></p>
+                    <p>基于DeepSeek技术构建，可以为您提供：</p>
+                    <ul class="feature-list">
+                        <li>麻醉药物信息：剂量、适应症、不良反应</li>
+                        <li>麻醉技术指导：操作流程、注意事项</li>
+                        <li>并发症处理：预防策略、紧急处理方案</li>
+                        <li>术前评估：风险评估、准备工作</li>
+                        <li>术后管理：镇痛方案、随访建议</li>
+                    </ul>
+                    <p style="margin-top: 20px; color: #666; font-size: 14px;">
+                        请输入您的问题，我会为您提供专业的麻醉学建议。
+                    </p>
                 </div>
-                
-                <div class="chat-messages" id="chat-messages">
+            </div>
+
+            <!-- 右侧聊天区域 -->
+            <div class="chat-main">
+                <!-- 聊天消息区域 -->
+                <div id="chat-messages" class="chat-messages">
+                    <!-- 初始欢迎消息 -->
                     <div class="message assistant">
                         <div class="message-header">
                             <i class="fas fa-robot"></i>
-                            <span>AnesLink AI助手</span>
+                            AnesLink AI助手
                         </div>
                         <div class="message-content">
-                            <h3>您好！我是AnesLink AI助手</h3>
-                            <p>基于DeepSeek技术构建，我可以为您提供：</p>
-                            <ul>
-                                <li><strong>麻醉药物信息</strong>：剂量、适应症、不良反应</li>
-                                <li><strong>麻醉技术指导</strong>：操作流程、注意事项</li>
-                                <li><strong>并发症处理</strong>：预防策略、紧急处理方案</li>
-                                <li><strong>术前评估</strong>：风险评估、准备工作</li>
-                                <li><strong>术后管理</strong>：镇痛方案、随访建议</li>
-                            </ul>
-                            <p>请问有什么可以帮您？</p>
+                            您好！我是AnesLink AI助手，基于DeepSeek技术构建。
+                            
+                            我可以为您提供专业的麻醉学支持：
+                            • 药物剂量查询与计算
+                            • 麻醉方案制定指导
+                            • 并发症预防与处理
+                            • 术前风险评估
+                            • 术后管理建议
+                            
+                            请问有什么可以帮您？
+                        </div>
+                        <div class="tts-controls">
+                            <button class="tts-btn" title="朗读此消息">
+                                <i class="fas fa-volume-up"></i> 朗读
+                            </button>
+                            <button class="tts-stop-btn" title="停止朗读">
+                                <i class="fas fa-stop"></i> 停止
+                            </button>
+                            <select class="tts-lang-select">
+                                <option value="zh-CN">中文</option>
+                                <option value="en-US">English</option>
+                                <option value="en-GB">English (UK)</option>
+                            </select>
+                            <span>语速: 1.0x</span>
                         </div>
                     </div>
                 </div>
-                
-                <div class="chat-input-area">
-                    <button class="voice-btn" id="voice-btn" title="语音输入">
-                        <i class="fas fa-microphone"></i>
-                    </button>
-                    <textarea class="chat-input" id="user-input" placeholder="请输入您的问题，例如：如何处理困难气道？丙泊酚的常用剂量是多少？术后恶心呕吐如何预防？"></textarea>
-                    <button class="send-btn" id="send-btn">
-                        <i class="fas fa-paper-plane"></i> 发送
-                    </button>
+
+                <!-- 输入区域 -->
+                <div class="input-container">
+                    <div class="input-wrapper">
+                        <input 
+                            type="text" 
+                            id="message-input" 
+                            placeholder="请输入您的问题，例如：如何处理困难气道？"
+                            autocomplete="off"
+                        >
+                        <button id="send-btn">
+                            <i class="fas fa-paper-plane"></i> 发送
+                        </button>
+                    </div>
+                    <p class="hint-text">
+                        例如：丙泊酚的常用剂量是多少？术后恶心呕吐如何预防？
+                    </p>
                 </div>
             </div>
-        </section>
+        </div>
 
-        <!-- 医学辞典 -->
-        <section id="dictionary" class="content">
-            <div class="dictionary-container">
-                <div class="dictionary-header">
-                    <i class="fas fa-book-medical"></i>
-                    <h2>麻醉学专业辞典 (中英互译)</h2>
-                </div>
-                
-                <div class="dictionary-controls">
-                    <div class="search-box">
-                        <i class="fas fa-search search-icon"></i>
-                        <input type="text" class="search-input" id="dictionary-search" placeholder="搜索麻醉学专业术语...">
-                    </div>
-                    
-                    <div class="language-toggle">
-                        <button class="lang-btn active" id="btn-zh-en">中→英</button>
-                        <button class="lang-btn" id="btn-en-zh">英→中</button>
-                    </div>
-                </div>
-                
-                <div class="dictionary-results">
-                    <div class="term-section">
-                        <h3><i class="fas fa-prescription-bottle-alt"></i> 麻醉药物</h3>
-                        <ul class="term-list" id="drug-terms">
-                            <!-- 术语将通过JavaScript动态加载 -->
-                        </ul>
-                    </div>
-                    
-                    <div class="term-section">
-                        <h3><i class="fas fa-procedures"></i> 麻醉技术</h3>
-                        <ul class="term-list" id="technique-terms">
-                            <!-- 术语将通过JavaScript动态加载 -->
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="reference-links">
-                    <h4><i class="fas fa-external-link-alt"></i> 权威医学资源</h4>
-                    <div class="links-grid" id="medical-resources">
-                        <!-- 医学资源链接将通过JavaScript动态加载 -->
-                    </div>
-                </div>
+        <!-- 底部信息 -->
+        <div class="footer">
+            <p>天津医院麻醉科医师 米岚 倾心打造 AnesLink麻醉助手 © 2026 基于DeepSeek大语言模型</p>
+            <p>专为麻醉科临床工作设计</p>
+            <div class="disclaimer">
+                <strong>重要提示：</strong> 本工具仅供参考，不能替代专业医疗判断。临床决策请结合患者具体情况，并参考最新药品说明书和临床指南。
             </div>
-        </section>
-
-        <!-- 随访提醒 -->
-        <section id="reminders" class="content">
-            <div class="reminder-container">
-                <div class="reminder-header">
-                    <i class="fas fa-bell"></i>
-                    <h2>患者随访提醒</h2>
-                </div>
-                
-                <div class="reminder-actions">
-                    <button class="add-reminder-btn" id="add-reminder-btn">
-                        <i class="fas fa-plus"></i> 添加新提醒
-                    </button>
-                    
-                    <div class="filter-options">
-                        <button class="filter-btn active" data-filter="all">全部</button>
-                        <button class="filter-btn" data-filter="urgent">紧急</button>
-                        <button class="filter-btn" data-filter="upcoming">近期</button>
-                        <button class="filter-btn" data-filter="completed">已完成</button>
-                    </div>
-                </div>
-                
-                <div class="reminder-list" id="reminder-list">
-                    <!-- 提醒将通过JavaScript动态加载 -->
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <!-- 添加提醒模态框 -->
-    <div class="modal" id="reminder-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="modal-title">添加随访提醒</h2>
-                <button class="close-modal" id="close-modal">&times;</button>
-            </div>
-            
-            <form id="reminder-form">
-                <div class="form-group">
-                    <label for="patient-name">患者姓名</label>
-                    <input type="text" id="patient-name" class="form-control" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="procedure-type">麻醉/手术类型</label>
-                    <select id="procedure-type" class="form-control" required>
-                        <option value="">请选择</option>
-                        <option value="全身麻醉">全身麻醉</option>
-                        <option value="椎管内麻醉">椎管内麻醉</option>
-                        <option value="神经阻滞">神经阻滞</option>
-                        <option value="局部麻醉">局部麻醉</option>
-                        <option value="镇静镇痛">镇静镇痛</option>
-                        <option value="其他">其他</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="reminder-date">随访日期</label>
-                    <input type="date" id="reminder-date" class="form-control" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="reminder-notes">备注</label>
-                    <textarea id="reminder-notes" class="form-control" rows="3" placeholder="请输入需要关注的术后问题或特殊注意事项..."></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label for="priority">优先级</label>
-                    <select id="priority" class="form-control" required>
-                        <option value="upcoming">常规 (7天内随访)</option>
-                        <option value="urgent">紧急 (3天内随访)</option>
-                        <option value="normal">一般 (14天内随访)</option>
-                    </select>
-                </div>
-                
-                <div class="modal-actions">
-                    <button type="button" class="btn btn-secondary" id="cancel-btn">取消</button>
-                    <button type="submit" class="btn btn-primary" id="save-btn">保存提醒</button>
-                </div>
-            </form>
         </div>
     </div>
 
-    <footer>
-        <div class="container">
-            <p>天津医院麻醉科医师米岚设计AnesLink麻醉学助手 &copy; 2026| 基于DeepSeek大语言模型 | 专为麻醉科临床工作设计</p>
-            <p>本工具仅供参考，不能替代专业医疗判断。临床决策请结合患者具体情况。</p>
-        </div>
-    </footer>
-
-    <!-- 调试按钮 -->
-    <button class="debug-btn" onclick="window.testAPI()" title="测试API连接">
-        <i class="fas fa-bug"></i>
-        <span style="font-size: 10px;">测试</span>
-    </button>
-
+    <!-- JavaScript -->
     <script>
-        "use strict";
-        
-        console.log('=== AnesLink麻醉学助手启动 ===');
-
-        // ============ 全局变量声明 ============
-        let currentLang = 'zh';
-        let chatHistory = [];
-        let reminders = [];
-        let dictionaryMode = "zh-en";
-        let currentFilter = "all";
-        let recognition;
+        // ========== 全局变量 ==========
         let currentSpeech = null;
-        let isSpeechPlaying = false;
-        let editingReminderId = null;
-
-        // ============ TTS文本转语音功能 ============
-        function initTTS() {
-            console.log('初始化TTS功能...');
+        let currentPlayingMessage = null;
+        let abortController = null;
+        
+        // ========== 初始化 ==========
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('AnesLink麻醉助手已启动 - 原始界面修复版');
             
-            if ('speechSynthesis' in window) {
-                console.log('✅ 浏览器支持语音合成');
-                
-                // 页面卸载时停止语音
-                window.addEventListener('beforeunload', stopSpeech);
-                
-                // 页面隐藏时暂停语音
-                document.addEventListener('visibilitychange', () => {
-                    if (document.hidden && isSpeechPlaying) {
-                        speechSynthesis.pause();
-                    } else if (!document.hidden && speechSynthesis.paused) {
-                        speechSynthesis.resume();
-                    }
-                });
-                
-            } else {
-                console.warn('❌ 浏览器不支持语音合成');
-            }
-        }
-
-        // 清理文本内容 - 移除所有标点符号、特殊字符和emoji
-        function cleanTextForTTS(text) {
-            console.log('原始TTS文本:', text.substring(0, 100) + '...');
+            // 初始焦点
+            document.getElementById('message-input').focus();
             
-            // 1. 移除HTML标签
-            let cleanText = text.replace(/<[^>]*>/g, ' ');
+            // 绑定发送按钮事件
+            document.getElementById('send-btn').addEventListener('click', sendMessage);
             
-            // 2. 移除所有特殊符号和标点（保留空格和基本标点）
-            cleanText = cleanText.replace(/[*\/#@$%^&()\[\]{}<>|\\_+=~`'"?!.,:;]/g, ' ');
-            
-            // 3. 移除emoji和特殊Unicode字符
-            cleanText = cleanText.replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F700}-\u{1F77F}]|[\u{1F780}-\u{1F7FF}]|[\u{1F800}-\u{1F8FF}]|[\u{1F900}-\u{1F9FF}]|[\u{1FA00}-\u{1FA6F}]|[\u{1FA70}-\u{1FAFF}]|[\u{2702}-\u{27B0}]|[\u{24C2}-\u{1F251}]/gu, ' ');
-            
-            // 4. 移除多余的星号（用于加粗的**）
-            cleanText = cleanText.replace(/\*\*/g, ' ');
-            cleanText = cleanText.replace(/\*/g, ' ');
-            
-            // 5. 移除数字后面的点（如1. 2. 3.）
-            cleanText = cleanText.replace(/(\d+)\./g, '$1 ');
-            
-            // 6. 合并多个空格为单个空格
-            cleanText = cleanText.replace(/\s+/g, ' ');
-            
-            // 7. 修剪首尾空格
-            cleanText = cleanText.trim();
-            
-            console.log('清理后TTS文本:', cleanText.substring(0, 100) + '...');
-            return cleanText;
-        }
-
-        // 为消息添加TTS按钮
-        function addTTSButton(messageElement, text) {
-            if (!('speechSynthesis' in window)) return;
-            
-            if (messageElement.classList.contains('assistant') && !messageElement.querySelector('.tts-container')) {
-                const ttsContainer = document.createElement('div');
-                ttsContainer.className = 'tts-container';
-                
-                // TTS按钮
-                const ttsBtn = document.createElement('button');
-                ttsBtn.className = 'tts-btn';
-                ttsBtn.innerHTML = '<i class="fas fa-volume-up"></i> ' + 
-                                  (currentLang === 'zh' ? '朗读' : 'Speak');
-                
-                // 停止按钮
-                const stopBtn = document.createElement('button');
-                stopBtn.className = 'tts-stop-btn';
-                stopBtn.innerHTML = '<i class="fas fa-stop"></i> ' + 
-                                   (currentLang === 'zh' ? '停止' : 'Stop');
-                stopBtn.style.display = 'none';
-                
-                // 语言选择
-                const langSelect = document.createElement('select');
-                langSelect.className = 'tts-lang-select';
-                langSelect.innerHTML = `
-                    <option value="zh-CN">中文</option>
-                    <option value="en-US">English</option>
-                    <option value="en-GB">English (UK)</option>
-                `;
-                langSelect.value = currentLang === 'zh' ? 'zh-CN' : 'en-US';
-                
-                // 语速控制
-                const speedControl = document.createElement('div');
-                speedControl.className = 'tts-speed-control';
-                
-                const speedLabel = document.createElement('span');
-                speedLabel.textContent = currentLang === 'zh' ? '语速:' : 'Speed:';
-                speedLabel.style.fontSize = '12px';
-                speedLabel.style.color = '#666';
-                
-                const speedInput = document.createElement('input');
-                speedInput.type = 'range';
-                speedInput.min = '0.5';
-                speedInput.max = '2';
-                speedInput.step = '0.1';
-                speedInput.value = '1';
-                speedInput.style.width = '80px';
-                
-                const speedValue = document.createElement('span');
-                speedValue.textContent = '1.0x';
-                speedValue.style.fontSize = '12px';
-                speedValue.style.minWidth = '35px';
-                
-                speedInput.addEventListener('input', (e) => {
-                    speedValue.textContent = e.target.value + 'x';
-                });
-                
-                speedControl.appendChild(speedLabel);
-                speedControl.appendChild(speedInput);
-                speedControl.appendChild(speedValue);
-                
-                // 存储原始文本用于TTS
-                const originalText = text;
-                
-                // 事件监听 - 点击小喇叭按钮
-                ttsBtn.addEventListener('click', () => {
-                    if (isSpeechPlaying) {
-                        // 如果正在播放，点击停止
-                        stopSpeech();
-                        ttsBtn.innerHTML = '<i class="fas fa-volume-up"></i> ' + 
-                                          (currentLang === 'zh' ? '朗读' : 'Speak');
-                        stopBtn.style.display = 'none';
-                        ttsBtn.classList.remove('playing');
-                    } else {
-                        // 如果停止，点击开始播放
-                        speakText(originalText, langSelect.value, parseFloat(speedInput.value));
-                    }
-                });
-                
-                // 停止按钮点击事件
-                stopBtn.addEventListener('click', () => {
-                    stopSpeech();
-                    ttsBtn.innerHTML = '<i class="fas fa-volume-up"></i> ' + 
-                                      (currentLang === 'zh' ? '朗读' : 'Speak');
-                    stopBtn.style.display = 'none';
-                    ttsBtn.classList.remove('playing');
-                });
-                
-                // 监听语音状态
-                speechSynthesis.addEventListener('start', () => {
-                    isSpeechPlaying = true;
-                    ttsBtn.innerHTML = '<i class="fas fa-stop"></i> ' + 
-                                      (currentLang === 'zh' ? '停止' : 'Stop');
-                    stopBtn.style.display = 'inline-flex';
-                    ttsBtn.classList.add('playing');
-                });
-                
-                speechSynthesis.addEventListener('end', () => {
-                    isSpeechPlaying = false;
-                    ttsBtn.innerHTML = '<i class="fas fa-volume-up"></i> ' + 
-                                      (currentLang === 'zh' ? '朗读' : 'Speak');
-                    stopBtn.style.display = 'none';
-                    ttsBtn.classList.remove('playing');
-                });
-                
-                speechSynthesis.addEventListener('pause', () => {
-                    isSpeechPlaying = false;
-                    ttsBtn.innerHTML = '<i class="fas fa-play"></i> ' + 
-                                      (currentLang === 'zh' ? '继续' : 'Resume');
-                });
-                
-                speechSynthesis.addEventListener('resume', () => {
-                    isSpeechPlaying = true;
-                    ttsBtn.innerHTML = '<i class="fas fa-stop"></i> ' + 
-                                      (currentLang === 'zh' ? '停止' : 'Stop');
-                });
-                
-                speechSynthesis.addEventListener('error', (event) => {
-                    console.error('TTS错误:', event);
-                    isSpeechPlaying = false;
-                    ttsBtn.innerHTML = '<i class="fas fa-volume-up"></i> ' + 
-                                      (currentLang === 'zh' ? '朗读' : 'Speak');
-                    stopBtn.style.display = 'none';
-                    ttsBtn.classList.remove('playing');
-                });
-                
-                ttsContainer.appendChild(ttsBtn);
-                ttsContainer.appendChild(stopBtn);
-                ttsContainer.appendChild(langSelect);
-                ttsContainer.appendChild(speedControl);
-                
-                messageElement.appendChild(ttsContainer);
-            }
-        }
-
-        // 朗读文本 - 使用原始文本，不修改内容
-        function speakText(text, lang = null, rate = 1.0) {
-            if (!('speechSynthesis' in window)) {
-                showNotification(currentLang === 'zh' ? '您的浏览器不支持语音合成' : 'Your browser does not support speech synthesis', 'error');
-                return;
-            }
-            
-            // 停止当前语音
-            stopSpeech();
-            
-            // 清理文本：使用cleanTextForTTS函数
-            const cleanText = cleanTextForTTS(text);
-            
-            if (!cleanText || cleanText.trim() === '') {
-                showNotification(currentLang === 'zh' ? '没有可朗读的文本内容' : 'No text content to speak', 'warning');
-                return;
-            }
-            
-            // 自动检测语言（如果没有指定）
-            let speechLang = lang;
-            if (!speechLang) {
-                const hasChinese = /[\u4e00-\u9fa5]/.test(cleanText);
-                speechLang = hasChinese ? 'zh-CN' : 'en-US';
-            }
-            
-            console.log(`TTS: 语言=${speechLang}, 语速=${rate}, 文本长度=${cleanText.length}`);
-            
-            // 创建语音实例 - 使用清理后的文本
-            currentSpeech = new SpeechSynthesisUtterance(cleanText);
-            currentSpeech.lang = speechLang;
-            currentSpeech.rate = rate;
-            currentSpeech.volume = 1.0;
-            currentSpeech.pitch = 1.0;
-            
-            // 选择语音
-            const voices = speechSynthesis.getVoices();
-            const selectedVoice = voices.find(voice => voice.lang.startsWith(speechLang.split('-')[0]));
-            if (selectedVoice) {
-                currentSpeech.voice = selectedVoice;
-            }
-            
-            // 开始播放
-            speechSynthesis.speak(currentSpeech);
-        }
-
-        // 停止语音
-        function stopSpeech() {
-            if (speechSynthesis.speaking) {
-                speechSynthesis.cancel();
-                isSpeechPlaying = false;
-                currentSpeech = null;
-            }
-        }
-
-        // 为所有AI消息添加TTS按钮
-        function addTTSButtonsToAllMessages() {
-            const aiMessages = document.querySelectorAll('.message.assistant');
-            aiMessages.forEach((msg) => {
-                if (!msg.querySelector('.tts-container')) {
-                    const messageContent = msg.querySelector('.message-content');
-                    if (messageContent) {
-                        const text = messageContent.textContent || messageContent.innerText;
-                        addTTSButton(msg, text);
-                    }
-                }
-            });
-        }
-
-        // 更新TTS按钮文本
-        function updateTTSButtonsText() {
-            const ttsButtons = document.querySelectorAll('.tts-btn');
-            const ttsStopButtons = document.querySelectorAll('.tts-stop-btn');
-            const speedLabels = document.querySelectorAll('.tts-speed-control span:first-child');
-            
-            ttsButtons.forEach(btn => {
-                if (isSpeechPlaying) {
-                    btn.innerHTML = '<i class="fas fa-stop"></i> ' + (currentLang === 'zh' ? '停止' : 'Stop');
-                } else {
-                    btn.innerHTML = '<i class="fas fa-volume-up"></i> ' + (currentLang === 'zh' ? '朗读' : 'Speak');
-                }
+            // 绑定回车键发送
+            document.getElementById('message-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') sendMessage();
             });
             
-            ttsStopButtons.forEach(btn => {
-                btn.innerHTML = '<i class="fas fa-stop"></i> ' + (currentLang === 'zh' ? '停止' : 'Stop');
-            });
+            // 绑定TTS按钮事件（使用事件委托）
+            document.addEventListener('click', handleTTSClick);
+        });
+        
+        // ========== 发送消息 ==========
+        async function sendMessage() {
+            const input = document.getElementById('message-input');
+            const message = input.value.trim();
+            if (!message) return;
             
-            speedLabels.forEach(label => {
-                label.textContent = currentLang === 'zh' ? '语速:' : 'Speed:';
-            });
+            // 添加用户消息
+            addMessage('user', message, '麻醉医生');
+            input.value = '';
+            
+            // 禁用发送按钮
+            const sendBtn = document.getElementById('send-btn');
+            const originalHtml = sendBtn.innerHTML;
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 思考中...';
+            
+            try {
+                // 模拟AI响应（实际使用时替换为API调用）
+                const response = await getAIResponse(message);
+                
+                // 添加AI回复
+                addMessage('assistant', response, 'AnesLink AI助手');
+                
+            } catch (error) {
+                console.error('请求失败:', error);
+                addMessage('assistant', '抱歉，请求失败，请稍后重试。', 'AnesLink AI助手');
+            } finally {
+                // 恢复发送按钮
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = originalHtml;
+            }
         }
-
-        // ============ 标签页切换功能 ============
-        function setupTabs() {
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.addEventListener('click', () => {
-                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                    document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
-                    
-                    tab.classList.add('active');
-                    const tabId = tab.getAttribute('data-tab');
-                    document.getElementById(tabId).classList.add('active');
-                });
-            });
-        }
-
-        // ============ AI助手功能 ============
-        const chatMessages = document.getElementById('chat-messages');
-        const userInput = document.getElementById('user-input');
-        const sendBtn = document.getElementById('send-btn');
-
-        // 显示通知
-        function showNotification(message, type = 'info') {
-            const notification = document.getElementById('notification');
-            const text = document.getElementById('notification-text');
+        
+        // ========== 添加消息到聊天 ==========
+        function addMessage(role, content, sender) {
+            const chatMessages = document.getElementById('chat-messages');
             
-            notification.className = `notification ${type}`;
-            notification.querySelector('i').className = 
-                type === 'success' ? 'fas fa-check-circle' :
-                type === 'error' ? 'fas fa-exclamation-circle' :
-                type === 'warning' ? 'fas fa-exclamation-triangle' :
-                'fas fa-info-circle';
-            
-            text.textContent = message;
-            notification.classList.add('active');
-            
-            setTimeout(() => {
-                notification.classList.remove('active');
-            }, 3000);
-        }
-
-        // 添加消息到聊天界面
-        function addMessage(content, isUser = false, isLoading = false) {
             const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${isUser ? 'user' : 'assistant'}`;
+            messageDiv.className = `message ${role}`;
             
-            const messageHeader = document.createElement('div');
-            messageHeader.className = 'message-header';
+            // 消息头部
+            const headerDiv = document.createElement('div');
+            headerDiv.className = 'message-header';
+            headerDiv.innerHTML = `
+                <i class="fas ${role === 'user' ? 'fa-user-md' : 'fa-robot'}"></i>
+                ${sender}
+            `;
             
-            const icon = document.createElement('i');
-            icon.className = isUser ? 'fas fa-user-md' : 'fas fa-robot';
+            // 消息内容
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.textContent = content;
             
-            const nameSpan = document.createElement('span');
-            nameSpan.textContent = isUser ? (currentLang === 'zh' ? '麻醉医生' : 'Anesthesiologist') : 'AnesLink AI助手';
-            
-            messageHeader.appendChild(icon);
-            messageHeader.appendChild(nameSpan);
-            
-            const messageContent = document.createElement('div');
-            messageContent.className = 'message-content';
-            
-            if (isLoading) {
-                messageContent.innerHTML = '<div class="loading"></div> ' + 
-                                          (currentLang === 'zh' ? '正在思考中...' : 'Thinking...');
+            // 如果是AI消息，添加TTS控制
+            if (role === 'assistant') {
+                const ttsDiv = document.createElement('div');
+                ttsDiv.className = 'tts-controls';
+                ttsDiv.innerHTML = `
+                    <button class="tts-btn" title="朗读此消息" data-message-id="${Date.now()}">
+                        <i class="fas fa-volume-up"></i> 朗读
+                    </button>
+                    <button class="tts-stop-btn" title="停止朗读">
+                        <i class="fas fa-stop"></i> 停止
+                    </button>
+                    <select class="tts-lang-select">
+                        <option value="zh-CN">中文</option>
+                        <option value="en-US">English</option>
+                        <option value="en-GB">English (UK)</option>
+                    </select>
+                    <span>语速: 1.0x</span>
+                `;
+                
+                messageDiv.appendChild(headerDiv);
+                messageDiv.appendChild(contentDiv);
+                messageDiv.appendChild(ttsDiv);
             } else {
-                if (!isUser) {
-                    messageContent.innerHTML = formatAIResponse(content);
-                } else {
-                    messageContent.textContent = content;
-                }
+                messageDiv.appendChild(headerDiv);
+                messageDiv.appendChild(contentDiv);
             }
-            
-            messageDiv.appendChild(messageHeader);
-            messageDiv.appendChild(messageContent);
             
             chatMessages.appendChild(messageDiv);
+            
+            // 滚动到底部
             chatMessages.scrollTop = chatMessages.scrollHeight;
-            
-            // 如果是AI回复且不是加载状态，添加TTS按钮
-            if (!isUser && !isLoading) {
-                setTimeout(() => {
-                    addTTSButton(messageDiv, content);
-                }, 100);
-            }
-            
-            return messageDiv;
         }
-
-        // 格式化AI回复
-        function formatAIResponse(text) {
-            text = text.replace(/^# (.*$)/gm, '<h3>$1</h3>');
-            text = text.replace(/^## (.*$)/gm, '<h4>$1</h4>');
-            text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-            text = text.replace(/^(\d+\.\s+.*$)/gm, '<li>$1</li>');
-            text = text.replace(/^-\s+(.*$)/gm, '<li>$1</li>');
+        
+        // ========== TTS功能修复（核心） ==========
+        function handleTTSClick(event) {
+            const target = event.target;
             
-            if (text.includes('<li>')) {
-                text = text.replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>');
+            // 处理朗读按钮点击
+            if (target.classList.contains('tts-btn') || target.closest('.tts-btn')) {
+                const ttsBtn = target.classList.contains('tts-btn') ? target : target.closest('.tts-btn');
+                playMessageTTS(ttsBtn);
+                event.preventDefault();
+                event.stopPropagation();
             }
             
-            text = text.replace(/\n\n/g, '</p><p>');
-            text = text.replace(/\n/g, '<br>');
-            
-            if (!text.startsWith('<h') && !text.startsWith('<ul')) {
-                text = '<p>' + text + '</p>';
+            // 处理停止按钮点击
+            if (target.classList.contains('tts-stop-btn') || target.closest('.tts-stop-btn')) {
+                stopTTS();
+                event.preventDefault();
+                event.stopPropagation();
+            }
+        }
+        
+        function playMessageTTS(ttsButton) {
+            // 如果正在播放其他消息，先停止
+            if (currentSpeech) {
+                stopTTS();
             }
             
-            if (text.toLowerCase().includes('剂量') || text.toLowerCase().includes('用药')) {
-                text += '<p style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-left: 4px solid #f39c12; border-radius: 4px;"><strong>⚠️ 重要提示：</strong>以上信息仅供参考，具体用药请结合患者实际情况，并参考最新药品说明书。</p>';
+            // 找到对应的消息元素
+            const messageElement = ttsButton.closest('.message.assistant');
+            if (!messageElement) {
+                console.error('未找到消息元素');
+                return;
             }
+            
+            // 提取当前消息的文本
+            const contentElement = messageElement.querySelector('.message-content');
+            if (!contentElement) {
+                console.error('未找到消息内容');
+                return;
+            }
+            
+            let text = contentElement.textContent || contentElement.innerText;
+            
+            // 清理文本：移除TTS控制区域的文本
+            text = cleanTTSText(text);
+            
+            if (!text || text.length < 5) {
+                alert('未找到可朗读的内容');
+                return;
+            }
+            
+            console.log('TTS播放文本:', text.substring(0, 100) + '...');
+            
+            // 获取语言设置
+            const langSelect = messageElement.querySelector('.tts-lang-select');
+            const language = langSelect ? langSelect.value : 'zh-CN';
+            
+            // 更新UI状态
+            updateTTSButtons(messageElement, true);
+            currentPlayingMessage = messageElement;
+            
+            // 播放TTS
+            playTTS(text, language);
+        }
+        
+        function cleanTTSText(text) {
+            if (!text) return '';
+            
+            // 移除常见的TTS控制文本
+            const patterns = [
+                /朗读\s*(停止)?\s*(中文|English|English \(UK\))?\s*语速:\s*[\d\.]+x?/gi,
+                /Read\s*(Stop)?\s*(Chinese|English)?\s*Speed:\s*[\d\.]+x?/gi,
+                /\n\s*(朗读|Read|停止|Stop).*/gi
+            ];
+            
+            patterns.forEach(pattern => {
+                text = text.replace(pattern, '');
+            });
+            
+            // 移除多余的空格和换行
+            text = text.replace(/\s+/g, ' ').trim();
             
             return text;
         }
-
-        // 语言检测函数
-        function detectLanguage(text) {
-            const cleanText = text.replace(/[^\w\u4e00-\u9fa5]/g, '');
-            const englishChars = cleanText.match(/[a-zA-Z]/g) || [];
-            const chineseChars = cleanText.match(/[\u4e00-\u9fa5]/g) || [];
+        
+        function updateTTSButtons(messageElement, isPlaying) {
+            // 重置所有按钮状态
+            document.querySelectorAll('.tts-btn').forEach(btn => {
+                btn.classList.remove('playing');
+                const stopBtn = btn.nextElementSibling;
+                if (stopBtn && stopBtn.classList.contains('tts-stop-btn')) {
+                    stopBtn.style.display = 'none';
+                }
+                btn.style.display = 'inline-flex';
+            });
             
-            const totalChars = englishChars.length + chineseChars.length;
-            if (totalChars === 0) return false;
-            
-            const englishRatio = englishChars.length / totalChars;
-            
-            if (englishRatio > 0.7 && englishChars.length > 5) {
-                return true;
-            }
-            
-            return false;
-        }
-
-        // 备用回答系统
-        function getFallbackResponse(message, errorMsg = '') {
-            const fallbackResponses = {
-                "困难气道": `# 困难气道处理流程
-
-## 1. 术前评估
-- Mallampati分级：I-IV级
-- 张口度：正常大于3厘米
-- 甲颏距离：大于6厘米
-- 头颈活动度：大于90度
-
-## 2. 准备工具
-- 基本设备：不同型号喉镜片
-- 声门上工具：喉罩、i-gel
-- 可视工具：可视喉镜、纤维支气管镜
-- 有创工具：环甲膜穿刺套件
-
-## 3. 处理策略
-- 预充氧：100百分比氧气3到5分钟
-- 清醒插管或快速诱导
-- 呼叫帮助：尽早寻求资深医师协助
-
-## 4. 无法插管无法氧合
-立即实施环甲膜切开
-
-注意：以上为一般性建议，具体情况请根据医院指南处理。`,
-                "丙泊酚": `# 丙泊酚 Propofol
-
-## 剂量参考
-### 成人
-- 诱导剂量：1.5到2.5毫克每千克静脉注射
-- 维持剂量：4到12毫克每千克每小时
-- 镇静剂量：0.5到1.5毫克每千克每小时
-
-### 儿童
-- 诱导剂量：2到3毫克每千克静脉注射
-- 维持剂量：9到15毫克每千克每小时
-
-## 注意事项
-1. 注射痛：预注利多卡因
-2. 呼吸抑制：需备好气道管理设备
-3. 循环抑制：血压下降
-4. 过敏反应：大豆、鸡蛋过敏者禁用
-
-重要提示：以上剂量仅供参考。`,
-                "恶心呕吐": `# 术后恶心呕吐PONV防治
-
-## 风险因素
-- 患者因素：女性、不吸烟、晕动病史
-- 麻醉因素：吸入麻醉药、阿片类药物
-
-## 预防策略
-### 基础预防
-1. 区域麻醉优先
-2. 丙泊酚静脉麻醉
-3. 充分水化
-
-### 药物预防
-- 地塞米松：4到8毫克静脉注射
-- 5-HT3拮抗剂：昂丹司琼4毫克静脉注射
-
-注意：具体用药方案请根据医院指南制定。`
-            };
-
-            for (const keyword in fallbackResponses) {
-                if (message.toLowerCase().includes(keyword.toLowerCase())) {
-                    return fallbackResponses[keyword];
+            if (isPlaying && messageElement) {
+                const ttsBtn = messageElement.querySelector('.tts-btn');
+                const stopBtn = messageElement.querySelector('.tts-stop-btn');
+                
+                if (ttsBtn) {
+                    ttsBtn.classList.add('playing');
+                    ttsBtn.style.display = 'none';
+                }
+                
+                if (stopBtn) {
+                    stopBtn.style.display = 'inline-flex';
                 }
             }
-
-            return `抱歉，AI服务暂时不可用
-
-错误信息：${errorMsg}
-
-您可以尝试询问：
-1. 如何处理困难气道？
-2. 丙泊酚的常用剂量是多少？
-3. 术后恶心呕吐如何预防？`;
         }
-
-        // 发送消息到AI
-        async function sendMessageToAI(message) {
+        
+        async function playTTS(text, language) {
             try {
-                console.log('开始调用AI API...');
+                // 清理和限制文本长度
+                const cleanText = text.substring(0, 2000).trim();
                 
-                const isEnglish = detectLanguage(message);
-                const language = isEnglish ? 'en' : 'zh';
-                console.log('检测到的语言:', language);
+                // 取消之前的请求（如果有）
+                if (abortController) {
+                    abortController.abort();
+                }
                 
-                const functionURL = '/.netlify/functions/chat';
-                console.log('调用URL:', functionURL);
+                // 创建新的AbortController
+                abortController = new AbortController();
+                const timeoutId = setTimeout(() => {
+                    abortController.abort();
+                }, 10000); // 10秒超时
                 
-                const response = await fetch(functionURL, {
+                // 调用TTS API - 请替换为你的实际API端点
+                const response = await fetch('/api/tts', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Accept': 'application/json'
                     },
                     body: JSON.stringify({
-                        message: message,
-                        history: chatHistory,
-                        language: language
-                    })
+                        text: cleanText,
+                        language: language,
+                        speed: 1.0
+                    }),
+                    signal: abortController.signal
                 });
-
-                console.log('收到响应，状态码:', response.status);
+                
+                clearTimeout(timeoutId);
                 
                 if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`HTTP错误 ${response.status}: ${errorText.substring(0, 100)}`);
+                    throw new Error(`TTS API错误: ${response.status}`);
                 }
-
-                const data = await response.json();
-                console.log('解析的响应数据:', data);
-
-                if (!data.response) {
-                    throw new Error('AI回复为空');
-                }
-
-                console.log('AI调用成功，回复长度:', data.response.length);
-                return data.response;
+                
+                const audioBlob = await response.blob();
+                const audioUrl = URL.createObjectURL(audioBlob);
+                const audio = new Audio(audioUrl);
+                
+                currentSpeech = audio;
+                
+                // 播放结束事件
+                audio.onended = function() {
+                    console.log('TTS播放完成');
+                    stopTTS();
+                };
+                
+                // 播放错误事件
+                audio.onerror = function(error) {
+                    console.error('音频播放错误:', error);
+                    stopTTS();
+                    alert('音频播放失败');
+                };
+                
+                // 开始播放
+                await audio.play();
                 
             } catch (error) {
-                console.error('AI调用失败:', error);
-                return getFallbackResponse(message, error.message);
-            }
-        }
-
-        // 发送消息
-        async function sendMessage() {
-            const message = userInput.value.trim();
-            if (!message) {
-                showNotification('请输入问题内容', 'warning');
-                return;
-            }
-            
-            console.log('发送消息:', message);
-            
-            sendBtn.disabled = true;
-            sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + (currentLang === 'zh' ? '发送中' : 'Sending');
-            
-            try {
-                const userMessageDiv = addMessage(message, true);
-                chatHistory.push({ role: 'user', content: message });
+                console.error('TTS播放失败:', error);
+                stopTTS();
                 
-                const thinkingDiv = addMessage('', false, true);
-                
-                const response = await sendMessageToAI(message);
-                console.log('收到AI响应:', response.substring(0, 50) + '...');
-                
-                thinkingDiv.remove();
-                const aiMessageDiv = addMessage(response, false);
-                chatHistory.push({ role: 'assistant', content: response });
-                
-                saveChatHistory();
-                
-            } catch (error) {
-                console.error('发送消息失败:', error);
-                showNotification('消息发送失败: ' + error.message, 'error');
-            } finally {
-                sendBtn.disabled = false;
-                sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i> ' + (currentLang === 'zh' ? '发送' : 'Send');
-                userInput.value = '';
-                userInput.focus();
-            }
-        }
-
-        // 保存聊天历史
-        function saveChatHistory() {
-            try {
-                localStorage.setItem('aneslink_chat_history', JSON.stringify(chatHistory));
-            } catch (error) {
-                console.error('保存聊天历史失败:', error);
-            }
-        }
-
-        // 加载聊天历史
-        function loadChatHistory() {
-            try {
-                const saved = localStorage.getItem('aneslink_chat_history');
-                if (saved) {
-                    chatHistory = JSON.parse(saved);
-                    const recentHistory = chatHistory.slice(-10);
-                    recentHistory.forEach(item => {
-                        if (item.role === 'user') {
-                            addMessage(item.content, true);
-                        } else if (item.role === 'assistant') {
-                            addMessage(item.content, false);
-                        }
-                    });
-                }
-            } catch (error) {
-                console.error('加载聊天历史失败:', error);
-            }
-        }
-
-        // ============ 医学辞典功能 ============
-        const dictionaryData = {
-            "zh-en": {
-                "drugs": [
-                    { term: "丙泊酚", translation: "Propofol" },
-                    { term: "七氟醚", translation: "Sevoflurane" },
-                    { term: "罗库溴铵", translation: "Rocuronium" },
-                    { term: "舒芬太尼", translation: "Sufentanil" },
-                    { term: "利多卡因", translation: "Lidocaine" },
-                    { term: "布比卡因", translation: "Bupivacaine" },
-                    { term: "右美托咪定", translation: "Dexmedetomidine" },
-                    { term: "麻黄碱", translation: "Ephedrine" },
-                    { term: "去氧肾上腺素", translation: "Phenylephrine" },
-                    { term: "依托咪酯", translation: "Etomidate" },
-                    { term: "咪达唑仑", translation: "Midazolam" },
-                    { term: "芬太尼", translation: "Fentanyl" }
-                ],
-                "techniques": [
-                    { term: "全身麻醉", translation: "General anesthesia" },
-                    { term: "椎管内麻醉", translation: "Neuraxial anesthesia" },
-                    { term: "硬膜外麻醉", translation: "Epidural anesthesia" },
-                    { term: "蛛网膜下腔阻滞", translation: "Spinal anesthesia" },
-                    { term: "神经阻滞", translation: "Nerve block" },
-                    { term: "超声引导下区域麻醉", translation: "Ultrasound-guided regional anesthesia" },
-                    { term: "快速顺序诱导", translation: "Rapid sequence induction" },
-                    { term: "靶控输注", translation: "Target-controlled infusion" },
-                    { term: "困难气道管理", translation: "Difficult airway management" },
-                    { term: "术后镇痛", translation: "Postoperative analgesia" },
-                    { term: "麻醉深度监测", translation: "Depth of anesthesia monitoring" },
-                    { term: "术中唤醒", translation: "Intraoperative awakening" }
-                ]
-            },
-            "en-zh": {
-                "drugs": [
-                    { term: "Propofol", translation: "丙泊酚" },
-                    { term: "Sevoflurane", translation: "七氟醚" },
-                    { term: "Rocuronium", translation: "罗库溴铵" },
-                    { term: "Sufentanil", translation: "舒芬太尼" },
-                    { term: "Lidocaine", translation: "利多卡因" },
-                    { term: "Bupivacaine", translation: "布比卡因" },
-                    { term: "Dexmedetomidine", translation: "右美托咪定" },
-                    { term: "Ephedrine", translation: "麻黄碱" },
-                    { term: "Phenylephrine", translation: "去氧肾上腺素" },
-                    { term: "Etomidate", translation: "依托咪酯" },
-                    { term: "Midazolam", translation: "咪达唑仑" },
-                    { term: "Fentanyl", translation: "芬太尼" }
-                ],
-                "techniques": [
-                    { term: "General anesthesia", translation: "全身麻醉" },
-                    { term: "Neuraxial anesthesia", translation: "椎管内麻醉" },
-                    { term: "Epidural anesthesia", translation: "硬膜外麻醉" },
-                    { term: "Spinal anesthesia", translation: "蛛网膜下腔阻滞" },
-                    { term: "Nerve block", translation: "神经阻滞" },
-                    { term: "Ultrasound-guided regional anesthesia", translation: "超声引导下区域麻醉" },
-                    { term: "Rapid sequence induction", translation: "快速顺序诱导" },
-                    { term: "Target-controlled infusion", translation: "靶控输注" },
-                    { term: "Difficult airway management", translation: "困难气道管理" },
-                    { term: "Postoperative analgesia", translation: "术后镇痛" },
-                    { term: "Depth of anesthesia monitoring", translation: "麻醉深度监测" },
-                    { term: "Intraoperative awakening", translation: "术中唤醒" }
-                ]
-            }
-        };
-
-        // 医学资源数据
-        const medicalResources = [
-            {
-                title: "医学期刊网",
-                url: "https://www.medjournals.cn/index.do",
-                description: "中华医学会系列杂志数字平台",
-                icon: "fas fa-newspaper"
-            },
-            {
-                title: "Merriam-Webster Medical",
-                url: "https://www.merriam-webster.com/medical",
-                description: "权威医学词典，含详细定义和发音",
-                icon: "fas fa-book"
-            },
-            {
-                title: "PubMed",
-                url: "https://pubmed.ncbi.nlm.nih.gov/",
-                description: "医学文献数据库，最新研究成果",
-                icon: "fas fa-file-alt"
-            },
-            {
-                title: "Medscape",
-                url: "https://www.medscape.com/",
-                description: "临床医学新闻和教育资源",
-                icon: "fas fa-stethoscope"
-            },
-            {
-                title: "ASA Education",
-                url: "https://www.asahq.org/education-and-career",
-                description: "美国麻醉医师学会教育资源",
-                icon: "fas fa-graduation-cap"
-            }
-        ];
-
-        // 创建术语项目（带TTS功能）
-        function createTermItem(term, translation) {
-            const li = document.createElement('li');
-            li.className = 'term-item';
-            
-            const termDiv = document.createElement('div');
-            termDiv.className = 'term';
-            termDiv.textContent = term;
-            
-            const translationDiv = document.createElement('div');
-            translationDiv.className = 'translation';
-            translationDiv.textContent = translation;
-            
-            // TTS按钮
-            const ttsBtn = document.createElement('button');
-            ttsBtn.className = 'tts-term-btn';
-            ttsBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
-            ttsBtn.title = currentLang === 'zh' ? '朗读' : 'Speak';
-            
-            // 确定朗读的文本
-            const textToSpeak = currentLang === 'zh' ? term : translation;
-            
-            ttsBtn.addEventListener('click', () => {
-                // 如果正在播放，点击停止
-                if (isSpeechPlaying) {
-                    stopSpeech();
-                    return;
-                }
-                speakText(textToSpeak);
-            });
-            
-            li.appendChild(termDiv);
-            li.appendChild(translationDiv);
-            li.appendChild(ttsBtn);
-            
-            return li;
-        }
-
-        // 加载词典术语
-        function loadDictionaryTerms() {
-            const data = dictionaryData[dictionaryMode];
-            const drugList = document.getElementById('drug-terms');
-            const techniqueList = document.getElementById('technique-terms');
-            
-            drugList.innerHTML = '';
-            techniqueList.innerHTML = '';
-            
-            data.drugs.forEach(item => {
-                const li = createTermItem(item.term, item.translation);
-                drugList.appendChild(li);
-            });
-            
-            data.techniques.forEach(item => {
-                const li = createTermItem(item.term, item.translation);
-                techniqueList.appendChild(li);
-            });
-        }
-
-        // 加载医学资源
-        function loadMedicalResources() {
-            const resourcesContainer = document.getElementById('medical-resources');
-            resourcesContainer.innerHTML = '';
-            
-            medicalResources.forEach(resource => {
-                const link = document.createElement('a');
-                link.className = 'external-link';
-                link.href = resource.url;
-                link.target = '_blank';
-                link.rel = 'noopener noreferrer';
-                link.innerHTML = `
-                    <i class="${resource.icon}"></i>
-                    <div class="link-content">
-                        <div class="link-title">${resource.title}</div>
-                        <div class="link-desc">${resource.description}</div>
-                    </div>
-                    <i class="fas fa-external-link-alt"></i>
-                `;
-                resourcesContainer.appendChild(link);
-            });
-        }
-
-        // 词典搜索功能
-        function searchDictionary() {
-            const searchTerm = document.getElementById('dictionary-search').value.toLowerCase();
-            const termItems = document.querySelectorAll('.term-item');
-            
-            termItems.forEach(item => {
-                const term = item.querySelector('.term').textContent.toLowerCase();
-                const translation = item.querySelector('.translation').textContent.toLowerCase();
-                
-                if (term.includes(searchTerm) || translation.includes(searchTerm)) {
-                    item.style.display = 'block';
+                if (error.name === 'AbortError') {
+                    alert('请求超时，请稍后重试');
                 } else {
-                    item.style.display = 'none';
+                    alert('语音播放失败，请检查网络连接');
                 }
-            });
-        }
-
-        // ============ 随访提醒功能 ============
-        function loadRemindersData() {
-            const saved = localStorage.getItem('aneslink_reminders');
-            if (saved) {
-                reminders = JSON.parse(saved);
-            } else {
-                reminders = [
-                    {
-                        id: 1,
-                        patientName: "张伟",
-                        procedureType: "全身麻醉",
-                        date: getDateString(1),
-                        notes: "腹腔镜胆囊切除术，关注术后恶心呕吐",
-                        priority: "urgent",
-                        completed: false
-                    },
-                    {
-                        id: 2,
-                        patientName: "李芳",
-                        procedureType: "椎管内麻醉",
-                        date: getDateString(3),
-                        notes: "剖宫产术，观察下肢运动恢复情况",
-                        priority: "upcoming",
-                        completed: false
-                    },
-                    {
-                        id: 3,
-                        patientName: "王刚",
-                        procedureType: "神经阻滞",
-                        date: getDateString(-5),
-                        notes: "肩关节镜手术，已电话随访，恢复良好",
-                        priority: "completed",
-                        completed: true
-                    },
-                    {
-                        id: 4,
-                        patientName: "刘明",
-                        procedureType: "全身麻醉",
-                        date: getDateString(0),
-                        notes: "甲状腺切除术，关注声音变化",
-                        priority: "urgent",
-                        completed: false
-                    }
-                ];
-                saveRemindersData();
             }
         }
-
-        function getDateString(daysFromNow) {
-            const date = new Date();
-            date.setDate(date.getDate() + daysFromNow);
-            return date.toISOString().split('T')[0];
-        }
-
-        function saveRemindersData() {
-            localStorage.setItem('aneslink_reminders', JSON.stringify(reminders));
-        }
-
-        // 加载提醒列表
-        function loadReminders() {
-            const reminderList = document.getElementById('reminder-list');
-            reminderList.innerHTML = '';
-            
-            let filteredReminders = reminders;
-            if (currentFilter === "urgent") {
-                filteredReminders = reminders.filter(r => r.priority === "urgent" && !r.completed);
-            } else if (currentFilter === "upcoming") {
-                filteredReminders = reminders.filter(r => r.priority === "upcoming" && !r.completed);
-            } else if (currentFilter === "completed") {
-                filteredReminders = reminders.filter(r => r.completed);
+        
+        function stopTTS() {
+            if (currentSpeech) {
+                currentSpeech.pause();
+                currentSpeech.currentTime = 0;
+                currentSpeech = null;
             }
             
-            if (filteredReminders.length === 0) {
-                reminderList.innerHTML = `
-                    <div class="reminder-card">
-                        <p style="text-align: center; color: var(--gray-color); padding: 30px;">
-                            <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 15px; display: block; color: #ddd;"></i>
-                            ${currentLang === 'zh' ? '暂无随访提醒' : 'No follow-up reminders'}
-                        </p>
-                    </div>
-                `;
-                return;
+            if (abortController) {
+                abortController.abort();
+                abortController = null;
             }
             
-            filteredReminders.forEach(reminder => {
-                const card = document.createElement('div');
-                card.className = `reminder-card ${reminder.priority} ${reminder.completed ? 'completed' : ''}`;
-                card.dataset.id = reminder.id;
-                
-                const statusText = getStatusText(reminder);
-                const daysDiff = getDaysDifference(reminder.date);
-                const daysText = daysDiff > 0 ? 
-                    (currentLang === 'zh' ? `已过期${daysDiff}天` : `Overdue by ${daysDiff} days`) : 
-                    (daysDiff < 0 ? 
-                        (currentLang === 'zh' ? `还剩${-daysDiff}天` : `${-daysDiff} days left`) : 
-                        (currentLang === 'zh' ? "今天" : "Today"));
-                
-                card.innerHTML = `
-                    <div class="reminder-title">
-                        <h3>${reminder.patientName} - ${reminder.procedureType}</h3>
-                        <span class="reminder-status">${statusText}</span>
-                    </div>
-                    <div class="reminder-details">
-                        <div class="detail-item">
-                            <span class="detail-label">${currentLang === 'zh' ? '随访日期' : 'Follow-up Date'}</span>
-                            <span>${formatDate(reminder.date)} (${daysText})</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">${currentLang === 'zh' ? '优先级' : 'Priority'}</span>
-                            <span>${getPriorityText(reminder.priority)}</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">${currentLang === 'zh' ? '状态' : 'Status'}</span>
-                            <span>${reminder.completed ? (currentLang === 'zh' ? '已完成' : 'Completed') : (currentLang === 'zh' ? '待处理' : 'Pending')}</span>
-                        </div>
-                    </div>
-                    <div class="detail-item full-width">
-                        <span class="detail-label">${currentLang === 'zh' ? '备注' : 'Notes'}</span>
-                        <span>${reminder.notes}</span>
-                    </div>
-                    <div class="reminder-actions-card">
-                        ${!reminder.completed ? `
-                            <button class="action-btn complete-btn" onclick="window.toggleReminderComplete(${reminder.id})">
-                                <i class="fas fa-check"></i> ${currentLang === 'zh' ? '标记完成' : 'Mark Complete'}
-                            </button>
-                        ` : ''}
-                        <button class="action-btn edit-btn" onclick="window.editReminder(${reminder.id})">
-                            <i class="fas fa-edit"></i> ${currentLang === 'zh' ? '编辑' : 'Edit'}
-                        </button>
-                        <button class="action-btn delete-btn" onclick="window.deleteReminder(${reminder.id})">
-                            <i class="fas fa-trash"></i> ${currentLang === 'zh' ? '删除' : 'Delete'}
-                        </button>
-                    </div>
-                `;
-                
-                reminderList.appendChild(card);
-            });
+            updateTTSButtons(null, false);
+            currentPlayingMessage = null;
         }
-
-        function getStatusText(reminder) {
-            if (reminder.completed) return currentLang === 'zh' ? '已完成' : 'Completed';
-            if (reminder.priority === "urgent") return currentLang === 'zh' ? '紧急' : 'Urgent';
-            if (reminder.priority === "upcoming") return currentLang === 'zh' ? '近期' : 'Upcoming';
-            return currentLang === 'zh' ? '常规' : 'Routine';
-        }
-
-        function getPriorityText(priority) {
-            switch(priority) {
-                case "urgent": return currentLang === 'zh' ? '紧急' : 'Urgent';
-                case "upcoming": return currentLang === 'zh' ? '近期' : 'Upcoming';
-                default: return currentLang === 'zh' ? '常规' : 'Routine';
-            }
-        }
-
-        function formatDate(dateString) {
-            const date = new Date(dateString);
-            if (currentLang === 'zh') {
-                return `${date.getFullYear()}年${date.getMonth()+1}月${date.getDate()}日`;
-            } else {
-                return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-            }
-        }
-
-        function getDaysDifference(dateString) {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const targetDate = new Date(dateString);
-            targetDate.setHours(0, 0, 0, 0);
-            return Math.floor((targetDate - today) / (1000 * 60 * 60 * 24));
-        }
-
-        // 提醒操作函数
-        window.toggleReminderComplete = function(id) {
-            const reminder = reminders.find(r => r.id === id);
-            if (reminder) {
-                reminder.completed = !reminder.completed;
-                saveRemindersData();
-                loadReminders();
-                showNotification(
-                    currentLang === 'zh' ? 
-                    `提醒已${reminder.completed ? '完成' : '恢复待处理'}` : 
-                    `Reminder ${reminder.completed ? 'completed' : 'restored to pending'}`,
-                    'success'
-                );
-            }
-        };
-
-        window.editReminder = function(id) {
-            const reminder = reminders.find(r => r.id === id);
-            if (reminder) {
-                openReminderModal(reminder);
-            }
-        };
-
-        window.deleteReminder = function(id) {
-            const confirmMsg = currentLang === 'zh' 
-                ? "确定要删除这个随访提醒吗？此操作不可撤销。" 
-                : "Are you sure you want to delete this follow-up reminder? This action cannot be undone.";
+        
+        // ========== 模拟AI响应 ==========
+        async function getAIResponse(message) {
+            // 模拟网络延迟
+            await new Promise(resolve => setTimeout(resolve, 800));
             
-            if (confirm(confirmMsg)) {
-                reminders = reminders.filter(r => r.id !== id);
-                saveRemindersData();
-                loadReminders();
-                showNotification(currentLang === 'zh' ? '提醒已删除' : 'Reminder deleted', 'success');
-            }
-        };
+            // 根据问题类型返回不同的响应
+            const responses = {
+                '困难气道': `处理困难气道的标准流程：
 
-        // ============ 模态框功能 ============
-        const reminderModal = document.getElementById('reminder-modal');
-        const addReminderBtn = document.getElementById('add-reminder-btn');
-        const closeModalBtn = document.getElementById('close-modal');
-        const cancelBtn = document.getElementById('cancel-btn');
-        const reminderForm = document.getElementById('reminder-form');
-        const modalTitle = document.getElementById('modal-title');
+### 术前评估（LEMON法则）
+1. Look: 观察外观特征
+2. Evaluate: 评估甲颏距离、张口度
+3. Mallampati: 咽部分级
+4. Obstruction: 气道梗阻迹象
+5. Neck mobility: 颈部活动度
 
-        // 打开添加/编辑提醒模态框
-        function openReminderModal(reminder = null) {
-            if (reminder) {
-                modalTitle.textContent = currentLang === 'zh' ? "编辑随访提醒" : "Edit Follow-up Reminder";
-                editingReminderId = reminder.id;
+### 设备准备
+• 各种型号喉镜片
+• 可视喉镜
+• 喉罩（不同尺寸）
+• 纤支镜
+• 环甲膜切开包
+
+### 处理策略
+Plan A: 首次喉镜插管
+Plan B: 声门上气道装置
+Plan C: 面罩/声门上通气
+Plan D: 紧急有创气道
+
+### 核心原则
+• 始终优先保证氧合
+• 限制喉镜尝试次数（≤3次）
+• 及时寻求帮助
+• 备好抢救设备
+
+注：具体情况请根据患者实际状况调整。`,
                 
-                document.getElementById('patient-name').value = reminder.patientName;
-                document.getElementById('procedure-type').value = reminder.procedureType;
-                document.getElementById('reminder-date').value = reminder.date;
-                document.getElementById('reminder-notes').value = reminder.notes;
-                document.getElementById('priority').value = reminder.priority;
-            } else {
-                modalTitle.textContent = currentLang === 'zh' ? "添加随访提醒" : "Add Follow-up Reminder";
-                editingReminderId = null;
+                '丙泊酚': `丙泊酚的临床使用指南：
+
+### 常用剂量
+【麻醉诱导】
+• 健康成人: 1.5-2.5 mg/kg IV
+• 老年人 (>65岁): 1-1.5 mg/kg IV  
+• 儿童: 2.5-3.5 mg/kg IV
+
+【麻醉维持】
+• 静脉输注: 4-12 mg/kg/h
+• TCI模式: 效应室浓度 3-6 μg/mL
+
+【镇静剂量】
+• ICU镇静: 0.3-4 mg/kg/h
+• 手术室外镇静: 0.5-1 mg/kg 单次
+
+### 注意事项
+1. 注射痛: 可预注利多卡因20-40mg
+2. 循环抑制: 剂量依赖性血压下降
+3. 呼吸抑制: 需备好气道管理设备
+4. 过敏反应: 罕见但需警惕
+
+### 禁忌症
+• 对丙泊酚或大豆/鸡蛋过敏者
+• 严重血脂代谢异常
+• 颅内压增高者慎用
+
+### 特殊人群
+• 肝功能不全: 剂量减少20-30%
+• 肾功能不全: 常规剂量
+• 肥胖患者: 按理想体重计算
+
+注意：以上为一般指导原则，具体用药需个体化。`,
                 
-                const tomorrow = new Date();
-                tomorrow.setDate(tomorrow.getDate() + 1);
-                document.getElementById('reminder-date').value = tomorrow.toISOString().split('T')[0];
-                reminderForm.reset();
-            }
-            
-            reminderModal.classList.add('active');
-        }
+                'default': `您的问题："${message}"
 
-        // 关闭模态框
-        function closeReminderModal() {
-            reminderModal.classList.remove('active');
-            reminderForm.reset();
-            editingReminderId = null;
-        }
+基于我的医学知识库，我为您提供以下专业建议：
 
-        // 保存提醒
-        function saveReminder(formData) {
-            const newReminder = {
-                id: editingReminderId || Date.now(),
-                patientName: formData.get('patient-name'),
-                procedureType: formData.get('procedure-type'),
-                date: formData.get('reminder-date'),
-                notes: formData.get('reminder-notes'),
-                priority: formData.get('priority'),
-                completed: false
+### 临床思维框架
+1. 风险评估：全面评估患者状况和手术风险
+2. 个体化方案：根据具体情况制定麻醉计划
+3. 应急预案：提前准备应对可能并发症
+4. 团队协作：确保多学科有效沟通
+
+### 关键考虑因素
+• 患者年龄、体重、合并症
+• 手术类型、时长、体位
+• 麻醉药物选择与配伍
+• 监测手段与频率
+• 术后镇痛与恢复
+
+### 安全提醒
+1. 遵循科室规章制度
+2. 使用前核对药物信息
+3. 持续监测生命体征
+4. 记录完整麻醉过程
+5. 及时处理异常情况
+
+### 重要声明
+本建议仅供参考，临床决策必须结合：
+✓ 患者具体病情
+✓ 最新临床指南
+✓ 可用医疗资源
+✓ 医生专业判断
+
+建议在上级医师指导下实施具体方案。`
             };
             
-            if (editingReminderId) {
-                const index = reminders.findIndex(r => r.id === editingReminderId);
-                if (index !== -1) {
-                    reminders[index] = newReminder;
-                    showNotification(currentLang === 'zh' ? '提醒已更新' : 'Reminder updated', 'success');
+            // 匹配关键词
+            for (const [keyword, response] of Object.entries(responses)) {
+                if (message.includes(keyword)) {
+                    return response;
                 }
-            } else {
-                reminders.push(newReminder);
-                showNotification(currentLang === 'zh' ? '提醒已添加' : 'Reminder added', 'success');
             }
             
-            saveRemindersData();
-            loadReminders();
-            closeReminderModal();
+            return responses.default;
         }
-
-        // ============ 语言翻译 ============
-        const translations = {
-            zh: {
-                'app-title': 'AnesLink麻醉学助手',
-                'app-subtitle': '专为麻醉科医生设计的智能助手',
-                'ai-assistant': 'AI助手',
-                'dictionary': '医学辞典',
-                'reminders': '随访提醒',
-                'chat-placeholder': '请输入您的问题，例如：如何处理困难气道？',
-                'send': '发送'
-            },
-            en: {
-                'app-title': 'AnesLink Anesthesia Assistant',
-                'app-subtitle': 'Intelligent assistant designed for anesthesiologists',
-                'ai-assistant': 'AI Assistant',
-                'dictionary': 'Medical Dictionary',
-                'reminders': 'Follow-up Reminders',
-                'chat-placeholder': 'Enter your question, e.g., How to manage difficult airway?',
-                'send': 'Send'
-            }
-        };
-
-        // 语言切换函数
-        window.switchLanguage = function(lang) {
-            console.log('切换语言到:', lang);
-            currentLang = lang;
-            
-            document.getElementById('lang-zh').classList.toggle('active', lang === 'zh');
-            document.getElementById('lang-en').classList.toggle('active', lang === 'en');
-            
-            const header = document.querySelector('header h1');
-            if (header) header.textContent = translations[lang]['app-title'];
-            
-            const subtitle = document.querySelector('.header-info p:first-child');
-            if (subtitle) subtitle.textContent = translations[lang]['app-subtitle'];
-            
-            const tabs = document.querySelectorAll('.tab');
-            if (tabs[0]) tabs[0].innerHTML = `<i class="fas fa-robot"></i> ${translations[lang]['ai-assistant']}`;
-            if (tabs[1]) tabs[1].innerHTML = `<i class="fas fa-book-medical"></i> ${translations[lang]['dictionary']}`;
-            if (tabs[2]) tabs[2].innerHTML = `<i class="fas fa-bell"></i> ${translations[lang]['reminders']}`;
-            
-            const input = document.getElementById('user-input');
-            if (input) input.placeholder = translations[lang]['chat-placeholder'];
-            
-            const sendBtn = document.getElementById('send-btn');
-            if (sendBtn) sendBtn.innerHTML = `<i class="fas fa-paper-plane"></i> ${translations[lang]['send']}`;
-            
-            // 更新TTS按钮文本
-            updateTTSButtonsText();
-            
-            // 更新辞典搜索框placeholder
-            const searchInput = document.getElementById('dictionary-search');
-            if (searchInput) searchInput.placeholder = lang === 'zh' ? '搜索麻醉学专业术语...' : 'Search anesthesia terms...';
-            
-            // 重新加载辞典和提醒
-            loadDictionaryTerms();
-            loadReminders();
-        };
-
-        // ============ API测试函数 ============
-        window.testAPI = async function() {
-            console.log('开始测试API连接...');
-            
-            try {
-                const functionURL = '/.netlify/functions/chat';
-                showNotification(currentLang === 'zh' ? '正在测试API连接...' : 'Testing API connection...', 'info');
-                
-                const response = await fetch(functionURL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        message: '测试连接',
-                        history: []
-                    })
-                });
-                
-                const text = await response.text();
-                
-                let result = `${currentLang === 'zh' ? 'API测试结果：' : 'API Test Result:'}\n`;
-                result += `${currentLang === 'zh' ? '状态码:' : 'Status:'} ${response.status}\n`;
-                
-                try {
-                    const data = JSON.parse(text);
-                    if (response.ok) {
-                        result += `${currentLang === 'zh' ? 'API连接成功！' : 'API connection successful!'}\n`;
-                        showNotification(currentLang === 'zh' ? 'API连接成功！' : 'API connection successful!', 'success');
-                    } else {
-                        result += `${currentLang === 'zh' ? 'API返回错误' : 'API returned error'}\n`;
-                        result += `${currentLang === 'zh' ? '错误:' : 'Error:'} ${data.message || data.error || 'unknown'}\n`;
-                    }
-                } catch (e) {
-                    result += `${currentLang === 'zh' ? '响应不是JSON格式' : 'Response is not JSON format'}\n`;
-                }
-                
-                alert(result);
-                console.log('API测试结果:', result);
-                
-            } catch (error) {
-                const errorMsg = `${currentLang === 'zh' ? 'API测试失败:' : 'API test failed:'}\n${error.message}`;
-                alert(errorMsg);
-                console.error('API测试失败:', error);
-                showNotification(currentLang === 'zh' ? 'API测试失败' : 'API test failed', 'error');
-            }
-        };
-
-        // ============ 初始化应用 ============
-        function initApp() {
-            console.log('初始化AnesLink应用...');
-            
-            // 初始化TTS
-            initTTS();
-            
-            // 设置标签页
-            setupTabs();
-            
-            // 加载数据
-            loadDictionaryTerms();
-            loadMedicalResources();
-            loadRemindersData();
-            loadReminders();
-            loadChatHistory();
-            
-            // 绑定事件
-            if (sendBtn) {
-                sendBtn.addEventListener('click', sendMessage);
-            }
-            
-            if (userInput) {
-                userInput.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        sendMessage();
-                    }
-                });
-            }
-            
-            // 词典功能
-            document.getElementById('btn-zh-en').addEventListener('click', () => {
-                document.getElementById('btn-zh-en').classList.add('active');
-                document.getElementById('btn-en-zh').classList.remove('active');
-                dictionaryMode = "zh-en";
-                loadDictionaryTerms();
-            });
-
-            document.getElementById('btn-en-zh').addEventListener('click', () => {
-                document.getElementById('btn-en-zh').classList.add('active');
-                document.getElementById('btn-zh-en').classList.remove('active');
-                dictionaryMode = "en-zh";
-                loadDictionaryTerms();
-            });
-
-            document.getElementById('dictionary-search').addEventListener('input', searchDictionary);
-            
-            // 提醒功能
-            addReminderBtn.addEventListener('click', () => openReminderModal());
-            closeModalBtn.addEventListener('click', closeReminderModal);
-            cancelBtn.addEventListener('click', closeReminderModal);
-
-            reminderModal.addEventListener('click', (e) => {
-                if (e.target === reminderModal) {
-                    closeReminderModal();
-                }
-            });
-
-            reminderForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const formData = new FormData(reminderForm);
-                saveReminder(formData);
-            });
-
-            // 过滤按钮
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    currentFilter = btn.getAttribute('data-filter');
-                    loadReminders();
-                });
-            });
-
-            // 设置日期输入框的最小值为今天
-            const today = new Date().toISOString().split('T')[0];
-            const dateInput = document.getElementById('reminder-date');
-            if (dateInput) {
-                dateInput.min = today;
-            }
-
-            console.log('AnesLink应用初始化完成！');
-            
-            // 显示欢迎消息
-            setTimeout(() => {
-                if (chatHistory.length === 0) {
-                    showNotification(currentLang === 'zh' ? '欢迎使用AnesLink麻醉学助手！' : 'Welcome to AnesLink Anesthesia Assistant!', 'success');
-                }
-                
-                // 为已存在的AI消息添加TTS按钮
-                setTimeout(() => {
-                    addTTSButtonsToAllMessages();
-                }, 500);
-            }, 1000);
-        }
-
-        // 当DOM加载完成后初始化
-        document.addEventListener('DOMContentLoaded', initApp);
     </script>
 </body>
 </html>
