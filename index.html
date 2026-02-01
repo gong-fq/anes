@@ -1336,14 +1336,14 @@
                 <div class="quick-search">
                     <h4><i class="fas fa-bolt"></i> 快捷查询</h4>
                     <div class="quick-terms">
-                        <button class="quick-term-btn" data-term="propofol">丙泊酚 Propofol</button>
-                        <button class="quick-term-btn" data-term="fentanyl">芬太尼 Fentanyl</button>
-                        <button class="quick-term-btn" data-term="sevoflurane">七氟醚 Sevoflurane</button>
-                        <button class="quick-term-btn" data-term="rocuronium">罗库溴铵 Rocuronium</button>
-                        <button class="quick-term-btn" data-term="anesthesia">麻醉 Anesthesia</button>
-                        <button class="quick-term-btn" data-term="intubation">气管插管 Intubation</button>
-                        <button class="quick-term-btn" data-term="laryngoscope">喉镜 Laryngoscope</button>
-                        <button class="quick-term-btn" data-term="hypotension">低血压 Hypotension</button>
+                        <button class="quick-term-btn" data-term="丙泊酚">丙泊酚</button>
+                        <button class="quick-term-btn" data-term="芬太尼">芬太尼</button>
+                        <button class="quick-term-btn" data-term="propofol">Propofol</button>
+                        <button class="quick-term-btn" data-term="fentanyl">Fentanyl</button>
+                        <button class="quick-term-btn" data-term="全身麻醉">全身麻醉</button>
+                        <button class="quick-term-btn" data-term="anesthesia">Anesthesia</button>
+                        <button class="quick-term-btn" data-term="气管插管">气管插管</button>
+                        <button class="quick-term-btn" data-term="intubation">Intubation</button>
                     </div>
                 </div>
 
@@ -2320,24 +2320,21 @@
                 return;
             }
 
-            let englishTerm = term.toLowerCase();
+            // 检测输入的是中文还是英文
+            const isChinese = /[\u4e00-\u9fa5]/.test(term);
 
-            // 如果输入的是中文，转换为英文
-            if (/[\u4e00-\u9fa5]/.test(term)) {
-                const translation = termTranslations[term];
-                if (translation) {
-                    englishTerm = translation;
-                    showNotification(`正在查询: ${term} (${translation})`, 'success');
-                } else {
-                    showNotification(`未找到"${term}"的英文翻译，将尝试直接查询`, 'info');
-                }
+            if (isChinese) {
+                // 中文词条 - 在 mcd8.com 医学百科中查询
+                showNotification(`正在查询: ${term}`, 'success');
+                const url = `https://www.mcd8.com/search.aspx?keyword=${encodeURIComponent(term)}`;
+                window.open(url, '_blank');
             } else {
+                // 英文词条 - 在 Merriam-Webster Medical Dictionary 中查询
+                const englishTerm = term.toLowerCase();
                 showNotification(`正在查询: ${englishTerm}`, 'success');
+                const url = `https://www.merriam-webster.com/medical/${encodeURIComponent(englishTerm)}`;
+                window.open(url, '_blank');
             }
-
-            // 在 Merriam-Webster Medical Dictionary 中打开查询
-            const url = `https://www.merriam-webster.com/medical/${encodeURIComponent(englishTerm)}`;
-            window.open(url, '_blank');
         }
 
         // 加载医学资源
@@ -2904,10 +2901,40 @@
                 }
                 
                 // 清理HTML标签
-                const cleanText = text.replace(/<[^>]*>/g, '');
+                let cleanText = text.replace(/<[^>]*>/g, '');
+                
+                // 检测文本主要语言
+                const chineseChars = cleanText.match(/[\u4e00-\u9fa5]/g);
+                const englishChars = cleanText.match(/[a-zA-Z]/g);
+                const isMainlyChinese = chineseChars && (!englishChars || chineseChars.length > englishChars.length);
+                
+                // 根据主要语言进行清理
+                if (isMainlyChinese) {
+                    // 中文模式：保留中文、数字和基本空格，移除英文、标点符号、特殊字符和emojis
+                    cleanText = cleanText
+                        .replace(/[a-zA-Z]/g, ' ')  // 移除英文字母
+                        .replace(/[\u4e00-\u9fa5][\u4e00-\u9fa5]/g, '$& ')  // 在中文字符间添加停顿
+                        .replace(/[^\u4e00-\u9fa5\d\s]/g, ' ')  // 移除非中文、数字、空格的字符（包括标点、emojis、特殊符号）
+                        .replace(/\s+/g, ' ')  // 合并多个空格
+                        .trim();
+                } else {
+                    // 英文模式：保留英文、数字和基本空格，移除中文、标点符号、特殊字符和emojis
+                    cleanText = cleanText
+                        .replace(/[\u4e00-\u9fa5]/g, ' ')  // 移除中文字符
+                        .replace(/[^a-zA-Z\d\s]/g, ' ')  // 移除非英文、数字、空格的字符（包括标点、emojis、特殊符号）
+                        .replace(/\s+/g, ' ')  // 合并多个空格
+                        .trim();
+                }
+                
+                // 如果清理后文本为空，提示用户
+                if (!cleanText || cleanText.length < 2) {
+                    showNotification('没有可朗读的文本内容', 'info');
+                    return;
+                }
                 
                 currentUtterance = new SpeechSynthesisUtterance(cleanText);
-                currentUtterance.lang = currentLang === 'zh' ? 'zh-CN' : 'en-US';
+                // 根据检测到的语言设置朗读语言
+                currentUtterance.lang = isMainlyChinese ? 'zh-CN' : 'en-US';
                 currentUtterance.rate = 1.0;
                 currentUtterance.pitch = 1.0;
                 
