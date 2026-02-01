@@ -1324,10 +1324,10 @@
                         <p><strong>使用说明：</strong></p>
                         <ul>
                             <li>在搜索框中输入中文或英文麻醉学术语</li>
-                            <li>系统将自动翻译术语并在 <strong>Merriam-Webster Medical Dictionary</strong> 中查询</li>
-                            <li>支持中英文互译：输入中文将查询对应英文术语，输入英文直接查询</li>
+                            <li>中文词条将在 <strong>百度百科</strong> 中查询</li>
+                            <li>英文词条将在 <strong>Merriam-Webster Medical Dictionary</strong> 中查询</li>
                             <li>点击"查询"按钮或按回车键即可在新窗口打开详细释义</li>
-                            <li>本地术语库包含常用麻醉药物、技术、设备、并发症等专业词汇</li>
+                            <li>也可点击下方快捷查询按钮快速查找常用术语</li>
                         </ul>
                     </div>
                 </div>
@@ -2324,9 +2324,9 @@
             const isChinese = /[\u4e00-\u9fa5]/.test(term);
 
             if (isChinese) {
-                // 中文词条 - 在 mcd8.com 医学百科中查询
+                // 中文词条 - 在百度百科中查询
                 showNotification(`正在查询: ${term}`, 'success');
-                const url = `https://www.mcd8.com/search.aspx?keyword=${encodeURIComponent(term)}`;
+                const url = `https://baike.baidu.com/item/${encodeURIComponent(term)}`;
                 window.open(url, '_blank');
             } else {
                 // 英文词条 - 在 Merriam-Webster Medical Dictionary 中查询
