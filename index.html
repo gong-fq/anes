@@ -406,7 +406,7 @@
             gap: 30px;
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 1200px) {
             .dictionary-results {
                 grid-template-columns: 1fr;
             }
@@ -468,6 +468,16 @@
         .translation {
             color: var(--gray-color);
             margin-bottom: 8px;
+        }
+
+        .term-description {
+            color: var(--gray-color);
+            font-size: 0.9rem;
+            margin-top: 5px;
+            line-height: 1.5;
+            font-style: italic;
+            padding-left: 10px;
+            border-left: 2px solid var(--accent-color);
         }
 
         .reference-links {
@@ -944,6 +954,10 @@
                 width: 95%;
                 padding: 20px;
             }
+            
+            .dictionary-results {
+                grid-template-columns: 1fr;
+            }
         }
 
         /* 滚动条样式 */
@@ -1251,20 +1265,13 @@
                     </div>
                 </div>
                 
-                <div class="dictionary-results">
-                    <div class="term-section">
-                        <h3><i class="fas fa-prescription-bottle-alt"></i> 麻醉药物</h3>
-                        <ul class="term-list" id="drug-terms">
-                            <!-- 术语将通过JavaScript动态加载 -->
-                        </ul>
-                    </div>
-                    
-                    <div class="term-section">
-                        <h3><i class="fas fa-procedures"></i> 麻醉技术</h3>
-                        <ul class="term-list" id="technique-terms">
-                            <!-- 术语将通过JavaScript动态加载 -->
-                        </ul>
-                    </div>
+                <div class="dictionary-results" id="dictionary-results">
+                    <!-- 术语将通过JavaScript动态加载，现在包含四个分类：
+                        1. 麻醉药物
+                        2. 麻醉技术  
+                        3. 麻醉设备
+                        4. 麻醉并发症
+                    -->
                 </div>
 
                 <div class="reference-links">
@@ -1886,66 +1893,206 @@
             }
         };
 
-        // 医学辞典数据
+        // 医学辞典数据 - 完整的麻醉学专业辞典
         const dictionaryData = {
             "zh-en": {
                 "drugs": [
-                    { term: "丙泊酚", translation: "Propofol" },
-                    { term: "七氟醚", translation: "Sevoflurane" },
-                    { term: "罗库溴铵", translation: "Rocuronium" },
-                    { term: "舒芬太尼", translation: "Sufentanil" },
-                    { term: "利多卡因", translation: "Lidocaine" },
-                    { term: "布比卡因", translation: "Bupivacaine" },
-                    { term: "右美托咪定", translation: "Dexmedetomidine" },
-                    { term: "麻黄碱", translation: "Ephedrine" },
-                    { term: "去氧肾上腺素", translation: "Phenylephrine" },
-                    { term: "依托咪酯", translation: "Etomidate" },
-                    { term: "咪达唑仑", translation: "Midazolam" },
-                    { term: "芬太尼", translation: "Fentanyl" }
+                    { term: "丙泊酚", translation: "Propofol", description: "短效静脉麻醉药，用于全身麻醉诱导和维持，镇静" },
+                    { term: "七氟醚", translation: "Sevoflurane", description: "吸入麻醉药，起效快，苏醒快，气味宜人" },
+                    { term: "异氟醚", translation: "Isoflurane", description: "吸入麻醉药，心肌抑制轻，适用于心血管手术" },
+                    { term: "地氟醚", translation: "Desflurane", description: "吸入麻醉药，苏醒最快，血气分配系数最低" },
+                    { term: "罗库溴铵", translation: "Rocuronium", description: "非去极化肌松药，起效快，用于快速顺序诱导" },
+                    { term: "维库溴铵", translation: "Vecuronium", description: "非去极化肌松药，无组胺释放，心血管稳定" },
+                    { term: "顺式阿曲库铵", translation: "Cisatracurium", description: "非去极化肌松药，Hofmann消除，适用于肝肾功能不全" },
+                    { term: "琥珀胆碱", translation: "Succinylcholine", description: "去极化肌松药，起效最快，用于快速顺序诱导" },
+                    { term: "芬太尼", translation: "Fentanyl", description: "强效阿片类镇痛药，镇痛强度为吗啡的100倍" },
+                    { term: "舒芬太尼", translation: "Sufentanil", description: "阿片类镇痛药，镇痛强度为芬太尼的5-10倍" },
+                    { term: "瑞芬太尼", translation: "Remifentanil", description: "超短效阿片类镇痛药，被酯酶代谢" },
+                    { term: "吗啡", translation: "Morphine", description: "阿片类镇痛药，主要用于术后镇痛" },
+                    { term: "咪达唑仑", translation: "Midazolam", description: "苯二氮䓬类镇静药，水溶性，顺行性遗忘" },
+                    { term: "地西泮", translation: "Diazepam", description: "苯二氮䓬类镇静药，抗焦虑，肌肉松弛" },
+                    { term: "右美托咪定", translation: "Dexmedetomidine", description: "α2受体激动剂，镇静、镇痛，无呼吸抑制" },
+                    { term: "利多卡因", translation: "Lidocaine", description: "局部麻醉药，抗心律失常，用于表面麻醉、浸润麻醉" },
+                    { term: "布比卡因", translation: "Bupivacaine", description: "长效局部麻醉药，心脏毒性较大" },
+                    { term: "罗哌卡因", translation: "Ropivacaine", description: "长效局部麻醉药，心脏毒性较小，运动感觉分离" },
+                    { term: "左布比卡因", translation: "Levobupivacaine", description: "布比卡因左旋体，心脏毒性较小" },
+                    { term: "依托咪酯", translation: "Etomidate", description: "静脉麻醉药，对循环影响小，抑制肾上腺皮质功能" },
+                    { term: "氯胺酮", translation: "Ketamine", description: "静脉麻醉药，镇痛强，产生分离麻醉，升高血压" },
+                    { term: "氟马西尼", translation: "Flumazenil", description: "苯二氮䓬类拮抗药" },
+                    { term: "纳洛酮", translation: "Naloxone", description: "阿片受体拮抗药" },
+                    { term: "新斯的明", translation: "Neostigmine", description: "抗胆碱酯酶药，用于逆转非去极化肌松药" },
+                    { term: "阿托品", translation: "Atropine", description: "抗胆碱药，用于治疗心动过缓" },
+                    { term: "麻黄碱", translation: "Ephedrine", description: "拟交感神经药，用于治疗低血压" },
+                    { term: "去氧肾上腺素", translation: "Phenylephrine", description: "α受体激动剂，用于治疗低血压" },
+                    { term: "多巴胺", translation: "Dopamine", description: "拟交感神经药，剂量依赖性作用" },
+                    { term: "肾上腺素", translation: "Epinephrine", description: "α和β受体激动剂，用于心脏复苏、过敏反应" },
+                    { term: "去甲肾上腺素", translation: "Norepinephrine", description: "强效α受体激动剂，用于治疗休克" }
                 ],
                 "techniques": [
-                    { term: "全身麻醉", translation: "General anesthesia" },
-                    { term: "椎管内麻醉", translation: "Neuraxial anesthesia" },
-                    { term: "硬膜外麻醉", translation: "Epidural anesthesia" },
-                    { term: "蛛网膜下腔阻滞", translation: "Spinal anesthesia" },
-                    { term: "神经阻滞", translation: "Nerve block" },
-                    { term: "超声引导下区域麻醉", translation: "Ultrasound-guided regional anesthesia" },
-                    { term: "快速顺序诱导", translation: "Rapid sequence induction" },
-                    { term: "靶控输注", translation: "Target-controlled infusion" },
-                    { term: "困难气道管理", translation: "Difficult airway management" },
-                    { term: "术后镇痛", translation: "Postoperative analgesia" },
-                    { term: "麻醉深度监测", translation: "Depth of anesthesia monitoring" },
-                    { term: "术中唤醒", translation: "Intraoperative awakening" }
+                    { term: "全身麻醉", translation: "General anesthesia", description: "通过药物使患者意识消失、无痛、肌肉松弛的状态" },
+                    { term: "椎管内麻醉", translation: "Neuraxial anesthesia", description: "包括硬膜外麻醉和蛛网膜下腔阻滞" },
+                    { term: "硬膜外麻醉", translation: "Epidural anesthesia", description: "将局麻药注入硬膜外腔，阻滞脊神经根" },
+                    { term: "蛛网膜下腔阻滞", translation: "Spinal anesthesia", description: "将局麻药注入蛛网膜下腔，阻滞脊神经根" },
+                    { term: "骶管阻滞", translation: "Caudal block", description: "经骶管裂孔将局麻药注入硬膜外腔" },
+                    { term: "神经阻滞", translation: "Nerve block", description: "将局麻药注射到神经干周围，阻断神经传导" },
+                    { term: "臂丛神经阻滞", translation: "Brachial plexus block", description: "包括肌间沟、锁骨上、锁骨下、腋路等入路" },
+                    { term: "腰丛神经阻滞", translation: "Lumbar plexus block", description: "包括腰大肌间隙阻滞、股神经阻滞等" },
+                    { term: "超声引导下区域麻醉", translation: "Ultrasound-guided regional anesthesia", description: "在超声引导下精确实施神经阻滞" },
+                    { term: "困难气道管理", translation: "Difficult airway management", description: "包括困难面罩通气、困难气管插管" },
+                    { term: "快速顺序诱导", translation: "Rapid sequence induction", description: "用于饱胃患者，快速诱导插管防止反流误吸" },
+                    { term: "清醒插管", translation: "Awake intubation", description: "在患者清醒状态下进行气管插管" },
+                    { term: "靶控输注", translation: "Target-controlled infusion", description: "计算机控制输注速率，维持设定的血药浓度" },
+                    { term: "术中唤醒", translation: "Intraoperative awakening", description: "术中暂停麻醉，评估神经功能" },
+                    { term: "控制性降压", translation: "Controlled hypotension", description: "通过药物或技术降低血压，减少术中出血" },
+                    { term: "控制性低温", translation: "Controlled hypothermia", description: "降低体温，减少代谢率，保护重要器官" },
+                    { term: "体外循环", translation: "Cardiopulmonary bypass", description: "心脏手术中替代心肺功能" },
+                    { term: "术中神经监测", translation: "Intraoperative neurophysiological monitoring", description: "监测神经功能，防止损伤" },
+                    { term: "麻醉深度监测", translation: "Depth of anesthesia monitoring", description: "包括BIS、Narcotrend等监测意识深度" },
+                    { term: "术后镇痛", translation: "Postoperative analgesia", description: "包括静脉镇痛、硬膜外镇痛、神经阻滞镇痛等" },
+                    { term: "患者自控镇痛", translation: "Patient-controlled analgesia", description: "患者按需自行给予镇痛药" },
+                    { term: "多模式镇痛", translation: "Multimodal analgesia", description: "联合不同作用机制的镇痛药物和技术" }
+                ],
+                "equipment": [
+                    { term: "麻醉机", translation: "Anesthesia machine", description: "提供氧气、麻醉气体和呼吸支持的设备" },
+                    { term: "麻醉呼吸机", translation: "Anesthesia ventilator", description: "提供机械通气的设备" },
+                    { term: "监护仪", translation: "Monitor", description: "监测生命体征的设备" },
+                    { term: "喉镜", translation: "Laryngoscope", description: "用于直接喉镜检查的气道工具" },
+                    { term: "可视喉镜", translation: "Video laryngoscope", description: "带有摄像头的喉镜，提高插管成功率" },
+                    { term: "纤维支气管镜", translation: "Fiberoptic bronchoscope", description: "用于困难气道管理的工具" },
+                    { term: "喉罩", translation: "Laryngeal mask airway", description: "声门上气道工具" },
+                    { term: "光棒", translation: "Lightwand", description: "利用透照原理引导气管插管" },
+                    { term: "食管-气管联合导管", translation: "Esophageal-tracheal Combitube", description: "紧急气道工具" },
+                    { term: "环甲膜穿刺套件", translation: "Cricothyrotomy kit", description: "用于紧急气道建立的工具" },
+                    { term: "超声仪", translation: "Ultrasound machine", description: "用于超声引导下神经阻滞和血管穿刺" },
+                    { term: "神经刺激器", translation: "Nerve stimulator", description: "用于神经定位的设备" },
+                    { term: "麻醉深度监测仪", translation: "Depth of anesthesia monitor", description: "监测意识深度的设备" },
+                    { term: "肌松监测仪", translation: "Neuromuscular monitor", description: "监测神经肌肉阻滞程度的设备" },
+                    { term: "血气分析仪", translation: "Blood gas analyzer", description: "分析血液气体和酸碱平衡的设备" },
+                    { term: "输液泵", translation: "Infusion pump", description: "精确控制输液速度的设备" },
+                    { term: "靶控输注泵", translation: "Target-controlled infusion pump", description: "实施靶控输注的设备" },
+                    { term: "加温设备", translation: "Warming device", description: "包括加温毯、输液加温器等" }
+                ],
+                "complications": [
+                    { term: "困难气道", translation: "Difficult airway", description: "面罩通气困难或气管插管困难" },
+                    { term: "反流误吸", translation: "Aspiration", description: "胃内容物反流入呼吸道" },
+                    { term: "喉痉挛", translation: "Laryngospasm", description: "喉部肌肉不自主痉挛性收缩" },
+                    { term: "支气管痉挛", translation: "Bronchospasm", description: "支气管平滑肌痉挛导致气道阻力增加" },
+                    { term: "低氧血症", translation: "Hypoxemia", description: "动脉血氧分压低于正常" },
+                    { term: "高碳酸血症", translation: "Hypercapnia", description: "动脉血二氧化碳分压高于正常" },
+                    { term: "低血压", translation: "Hypotension", description: "血压低于正常值" },
+                    { term: "高血压", translation: "Hypertension", description: "血压高于正常值" },
+                    { term: "心律失常", translation: "Arrhythmia", description: "心脏节律异常" },
+                    { term: "心肌缺血", translation: "Myocardial ischemia", description: "心肌供血不足" },
+                    { term: "恶性高热", translation: "Malignant hyperthermia", description: "罕见的遗传性药物反应，危及生命" },
+                    { term: "过敏反应", translation: "Anaphylaxis", description: "严重的全身性过敏反应" },
+                    { term: "术中知晓", translation: "Intraoperative awareness", description: "患者在术中恢复意识" },
+                    { term: "术后恶心呕吐", translation: "Postoperative nausea and vomiting", description: "麻醉后常见的并发症" },
+                    { term: "术后认知功能障碍", translation: "Postoperative cognitive dysfunction", description: "术后出现的认知功能下降" },
+                    { term: "术后谵妄", translation: "Postoperative delirium", description: "术后出现的急性意识障碍" },
+                    { term: "硬脊膜穿破后头痛", translation: "Post-dural puncture headache", description: "蛛网膜下腔阻滞后头痛" },
+                    { term: "局麻药中毒", translation: "Local anesthetic systemic toxicity", description: "局麻药入血引起的毒性反应" },
+                    { term: "神经损伤", translation: "Nerve injury", description: "麻醉操作或体位导致的神经损伤" },
+                    { term: "压疮", translation: "Pressure sore", description: "长时间手术体位导致的皮肤损伤" }
                 ]
             },
             "en-zh": {
                 "drugs": [
-                    { term: "Propofol", translation: "丙泊酚" },
-                    { term: "Sevoflurane", translation: "七氟醚" },
-                    { term: "Rocuronium", translation: "罗库溴铵" },
-                    { term: "Sufentanil", translation: "舒芬太尼" },
-                    { term: "Lidocaine", translation: "利多卡因" },
-                    { term: "Bupivacaine", translation: "布比卡因" },
-                    { term: "Dexmedetomidine", translation: "右美托咪定" },
-                    { term: "Ephedrine", translation: "麻黄碱" },
-                    { term: "Phenylephrine", translation: "去氧肾上腺素" },
-                    { term: "Etomidate", translation: "依托咪酯" },
-                    { term: "Midazolam", translation: "咪达唑仑" },
-                    { term: "Fentanyl", translation: "芬太尼" }
+                    { term: "Propofol", translation: "丙泊酚", description: "短效静脉麻醉药，用于全身麻醉诱导和维持，镇静" },
+                    { term: "Sevoflurane", translation: "七氟醚", description: "吸入麻醉药，起效快，苏醒快，气味宜人" },
+                    { term: "Isoflurane", translation: "异氟醚", description: "吸入麻醉药，心肌抑制轻，适用于心血管手术" },
+                    { term: "Desflurane", translation: "地氟醚", description: "吸入麻醉药，苏醒最快，血气分配系数最低" },
+                    { term: "Rocuronium", translation: "罗库溴铵", description: "非去极化肌松药，起效快，用于快速顺序诱导" },
+                    { term: "Vecuronium", translation: "维库溴铵", description: "非去极化肌松药，无组胺释放，心血管稳定" },
+                    { term: "Cisatracurium", translation: "顺式阿曲库铵", description: "非去极化肌松药，Hofmann消除，适用于肝肾功能不全" },
+                    { term: "Succinylcholine", translation: "琥珀胆碱", description: "去极化肌松药，起效最快，用于快速顺序诱导" },
+                    { term: "Fentanyl", translation: "芬太尼", description: "强效阿片类镇痛药，镇痛强度为吗啡的100倍" },
+                    { term: "Sufentanil", translation: "舒芬太尼", description: "阿片类镇痛药，镇痛强度为芬太尼的5-10倍" },
+                    { term: "Remifentanil", translation: "瑞芬太尼", description: "超短效阿片类镇痛药，被酯酶代谢" },
+                    { term: "Morphine", translation: "吗啡", description: "阿片类镇痛药，主要用于术后镇痛" },
+                    { term: "Midazolam", translation: "咪达唑仑", description: "苯二氮䓬类镇静药，水溶性，顺行性遗忘" },
+                    { term: "Diazepam", translation: "地西泮", description: "苯二氮䓬类镇静药，抗焦虑，肌肉松弛" },
+                    { term: "Dexmedetomidine", translation: "右美托咪定", description: "α2受体激动剂，镇静、镇痛，无呼吸抑制" },
+                    { term: "Lidocaine", translation: "利多卡因", description: "局部麻醉药，抗心律失常，用于表面麻醉、浸润麻醉" },
+                    { term: "Bupivacaine", translation: "布比卡因", description: "长效局部麻醉药，心脏毒性较大" },
+                    { term: "Ropivacaine", translation: "罗哌卡因", description: "长效局部麻醉药，心脏毒性较小，运动感觉分离" },
+                    { term: "Levobupivacaine", translation: "左布比卡因", description: "布比卡因左旋体，心脏毒性较小" },
+                    { term: "Etomidate", translation: "依托咪酯", description: "静脉麻醉药，对循环影响小，抑制肾上腺皮质功能" },
+                    { term: "Ketamine", translation: "氯胺酮", description: "静脉麻醉药，镇痛强，产生分离麻醉，升高血压" },
+                    { term: "Flumazenil", translation: "氟马西尼", description: "苯二氮䓬类拮抗药" },
+                    { term: "Naloxone", translation: "纳洛酮", description: "阿片受体拮抗药" },
+                    { term: "Neostigmine", translation: "新斯的明", description: "抗胆碱酯酶药，用于逆转非去极化肌松药" },
+                    { term: "Atropine", translation: "阿托品", description: "抗胆碱药，用于治疗心动过缓" },
+                    { term: "Ephedrine", translation: "麻黄碱", description: "拟交感神经药，用于治疗低血压" },
+                    { term: "Phenylephrine", translation: "去氧肾上腺素", description: "α受体激动剂，用于治疗低血压" },
+                    { term: "Dopamine", translation: "多巴胺", description: "拟交感神经药，剂量依赖性作用" },
+                    { term: "Epinephrine", translation: "肾上腺素", description: "α和β受体激动剂，用于心脏复苏、过敏反应" },
+                    { term: "Norepinephrine", translation: "去甲肾上腺素", description: "强效α受体激动剂，用于治疗休克" }
                 ],
                 "techniques": [
-                    { term: "General anesthesia", translation: "全身麻醉" },
-                    { term: "Neuraxial anesthesia", translation: "椎管内麻醉" },
-                    { term: "Epidural anesthesia", translation: "硬膜外麻醉" },
-                    { term: "Spinal anesthesia", translation: "蛛网膜下腔阻滞" },
-                    { term: "Nerve block", translation: "神经阻滞" },
-                    { term: "Ultrasound-guided regional anesthesia", translation: "超声引导下区域麻醉" },
-                    { term: "Rapid sequence induction", translation: "快速顺序诱导" },
-                    { term: "Target-controlled infusion", translation: "靶控输注" },
-                    { term: "Difficult airway management", translation: "困难气道管理" },
-                    { term: "Postoperative analgesia", translation: "术后镇痛" },
-                    { term: "Depth of anesthesia monitoring", translation: "麻醉深度监测" },
-                    { term: "Intraoperative awakening", translation: "术中唤醒" }
+                    { term: "General anesthesia", translation: "全身麻醉", description: "通过药物使患者意识消失、无痛、肌肉松弛的状态" },
+                    { term: "Neuraxial anesthesia", translation: "椎管内麻醉", description: "包括硬膜外麻醉和蛛网膜下腔阻滞" },
+                    { term: "Epidural anesthesia", translation: "硬膜外麻醉", description: "将局麻药注入硬膜外腔，阻滞脊神经根" },
+                    { term: "Spinal anesthesia", translation: "蛛网膜下腔阻滞", description: "将局麻药注入蛛网膜下腔，阻滞脊神经根" },
+                    { term: "Caudal block", translation: "骶管阻滞", description: "经骶管裂孔将局麻药注入硬膜外腔" },
+                    { term: "Nerve block", translation: "神经阻滞", description: "将局麻药注射到神经干周围，阻断神经传导" },
+                    { term: "Brachial plexus block", translation: "臂丛神经阻滞", description: "包括肌间沟、锁骨上、锁骨下、腋路等入路" },
+                    { term: "Lumbar plexus block", translation: "腰丛神经阻滞", description: "包括腰大肌间隙阻滞、股神经阻滞等" },
+                    { term: "Ultrasound-guided regional anesthesia", translation: "超声引导下区域麻醉", description: "在超声引导下精确实施神经阻滞" },
+                    { term: "Difficult airway management", translation: "困难气道管理", description: "包括困难面罩通气、困难气管插管" },
+                    { term: "Rapid sequence induction", translation: "快速顺序诱导", description: "用于饱胃患者，快速诱导插管防止反流误吸" },
+                    { term: "Awake intubation", translation: "清醒插管", description: "在患者清醒状态下进行气管插管" },
+                    { term: "Target-controlled infusion", translation: "靶控输注", description: "计算机控制输注速率，维持设定的血药浓度" },
+                    { term: "Intraoperative awakening", translation: "术中唤醒", description: "术中暂停麻醉，评估神经功能" },
+                    { term: "Controlled hypotension", translation: "控制性降压", description: "通过药物或技术降低血压，减少术中出血" },
+                    { term: "Controlled hypothermia", translation: "控制性低温", description: "降低体温，减少代谢率，保护重要器官" },
+                    { term: "Cardiopulmonary bypass", translation: "体外循环", description: "心脏手术中替代心肺功能" },
+                    { term: "Intraoperative neurophysiological monitoring", translation: "术中神经监测", description: "监测神经功能，防止损伤" },
+                    { term: "Depth of anesthesia monitoring", translation: "麻醉深度监测", description: "包括BIS、Narcotrend等监测意识深度" },
+                    { term: "Postoperative analgesia", translation: "术后镇痛", description: "包括静脉镇痛、硬膜外镇痛、神经阻滞镇痛等" },
+                    { term: "Patient-controlled analgesia", translation: "患者自控镇痛", description: "患者按需自行给予镇痛药" },
+                    { term: "Multimodal analgesia", translation: "多模式镇痛", description: "联合不同作用机制的镇痛药物和技术" }
+                ],
+                "equipment": [
+                    { term: "Anesthesia machine", translation: "麻醉机", description: "提供氧气、麻醉气体和呼吸支持的设备" },
+                    { term: "Anesthesia ventilator", translation: "麻醉呼吸机", description: "提供机械通气的设备" },
+                    { term: "Monitor", translation: "监护仪", description: "监测生命体征的设备" },
+                    { term: "Laryngoscope", translation: "喉镜", description: "用于直接喉镜检查的气道工具" },
+                    { term: "Video laryngoscope", translation: "可视喉镜", description: "带有摄像头的喉镜，提高插管成功率" },
+                    { term: "Fiberoptic bronchoscope", translation: "纤维支气管镜", description: "用于困难气道管理的工具" },
+                    { term: "Laryngeal mask airway", translation: "喉罩", description: "声门上气道工具" },
+                    { term: "Lightwand", translation: "光棒", description: "利用透照原理引导气管插管" },
+                    { term: "Esophageal-tracheal Combitube", translation: "食管-气管联合导管", description: "紧急气道工具" },
+                    { term: "Cricothyrotomy kit", translation: "环甲膜穿刺套件", description: "用于紧急气道建立的工具" },
+                    { term: "Ultrasound machine", translation: "超声仪", description: "用于超声引导下神经阻滞和血管穿刺" },
+                    { term: "Nerve stimulator", translation: "神经刺激器", description: "用于神经定位的设备" },
+                    { term: "Depth of anesthesia monitor", translation: "麻醉深度监测仪", description: "监测意识深度的设备" },
+                    { term: "Neuromuscular monitor", translation: "肌松监测仪", description: "监测神经肌肉阻滞程度的设备" },
+                    { term: "Blood gas analyzer", translation: "血气分析仪", description: "分析血液气体和酸碱平衡的设备" },
+                    { term: "Infusion pump", translation: "输液泵", description: "精确控制输液速度的设备" },
+                    { term: "Target-controlled infusion pump", translation: "靶控输注泵", description: "实施靶控输注的设备" },
+                    { term: "Warming device", translation: "加温设备", description: "包括加温毯、输液加温器等" }
+                ],
+                "complications": [
+                    { term: "Difficult airway", translation: "困难气道", description: "面罩通气困难或气管插管困难" },
+                    { term: "Aspiration", translation: "反流误吸", description: "胃内容物反流入呼吸道" },
+                    { term: "Laryngospasm", translation: "喉痉挛", description: "喉部肌肉不自主痉挛性收缩" },
+                    { term: "Bronchospasm", translation: "支气管痉挛", description: "支气管平滑肌痉挛导致气道阻力增加" },
+                    { term: "Hypoxemia", translation: "低氧血症", description: "动脉血氧分压低于正常" },
+                    { term: "Hypercapnia", translation: "高碳酸血症", description: "动脉血二氧化碳分压高于正常" },
+                    { term: "Hypotension", translation: "低血压", description: "血压低于正常值" },
+                    { term: "Hypertension", translation: "高血压", description: "血压高于正常值" },
+                    { term: "Arrhythmia", translation: "心律失常", description: "心脏节律异常" },
+                    { term: "Myocardial ischemia", translation: "心肌缺血", description: "心肌供血不足" },
+                    { term: "Malignant hyperthermia", translation: "恶性高热", description: "罕见的遗传性药物反应，危及生命" },
+                    { term: "Anaphylaxis", translation: "过敏反应", description: "严重的全身性过敏反应" },
+                    { term: "Intraoperative awareness", translation: "术中知晓", description: "患者在术中恢复意识" },
+                    { term: "Postoperative nausea and vomiting", translation: "术后恶心呕吐", description: "麻醉后常见的并发症" },
+                    { term: "Postoperative cognitive dysfunction", translation: "术后认知功能障碍", description: "术后出现的认知功能下降" },
+                    { term: "Postoperative delirium", translation: "术后谵妄", description: "术后出现的急性意识障碍" },
+                    { term: "Post-dural puncture headache", translation: "硬脊膜穿破后头痛", description: "蛛网膜下腔阻滞后头痛" },
+                    { term: "Local anesthetic systemic toxicity", translation: "局麻药中毒", description: "局麻药入血引起的毒性反应" },
+                    { term: "Nerve injury", translation: "神经损伤", description: "麻醉操作或体位导致的神经损伤" },
+                    { term: "Pressure sore", translation: "压疮", description: "长时间手术体位导致的皮肤损伤" }
                 ]
             }
         };
@@ -1987,36 +2134,46 @@
         // 当前词典模式
         let dictionaryMode = "zh-en";
 
-        // 加载词典术语
+        // 加载词典术语 - 修改为加载多个分类
         function loadDictionaryTerms() {
             const data = dictionaryData[dictionaryMode];
-            const drugList = document.getElementById('drug-terms');
-            const techniqueList = document.getElementById('technique-terms');
+            const container = document.getElementById('dictionary-results');
             
-            // 清空列表
-            drugList.innerHTML = '';
-            techniqueList.innerHTML = '';
+            // 清空容器
+            container.innerHTML = '';
             
-            // 添加药物术语
-            data.drugs.forEach(item => {
-                const li = document.createElement('li');
-                li.className = 'term-item';
-                li.innerHTML = `
-                    <div class="term">${item.term}</div>
-                    <div class="translation">${item.translation}</div>
-                `;
-                drugList.appendChild(li);
-            });
+            // 创建各个分类部分
+            const categories = [
+                { id: 'drugs', title: '麻醉药物', icon: 'fas fa-prescription-bottle-alt' },
+                { id: 'techniques', title: '麻醉技术', icon: 'fas fa-procedures' },
+                { id: 'equipment', title: '麻醉设备', icon: 'fas fa-tools' },
+                { id: 'complications', title: '麻醉并发症', icon: 'fas fa-exclamation-triangle' }
+            ];
             
-            // 添加技术术语
-            data.techniques.forEach(item => {
-                const li = document.createElement('li');
-                li.className = 'term-item';
-                li.innerHTML = `
-                    <div class="term">${item.term}</div>
-                    <div class="translation">${item.translation}</div>
-                `;
-                techniqueList.appendChild(li);
+            categories.forEach(category => {
+                if (data[category.id]) {
+                    const section = document.createElement('div');
+                    section.className = 'term-section';
+                    section.innerHTML = `
+                        <h3><i class="${category.icon}"></i> ${category.title}</h3>
+                        <ul class="term-list" id="${category.id}-terms"></ul>
+                    `;
+                    container.appendChild(section);
+                    
+                    const list = document.getElementById(`${category.id}-terms`);
+                    
+                    // 添加术语
+                    data[category.id].forEach(item => {
+                        const li = document.createElement('li');
+                        li.className = 'term-item';
+                        li.innerHTML = `
+                            <div class="term">${item.term}</div>
+                            <div class="translation">${item.translation}</div>
+                            <div class="term-description">${item.description}</div>
+                        `;
+                        list.appendChild(li);
+                    });
+                }
             });
         }
 
@@ -2051,9 +2208,11 @@
             termItems.forEach(item => {
                 const term = item.querySelector('.term').textContent.toLowerCase();
                 const translation = item.querySelector('.translation').textContent.toLowerCase();
+                const description = item.querySelector('.term-description')?.textContent.toLowerCase() || '';
                 
-                if (term.includes(searchTerm) || translation.includes(searchTerm)) {
+                if (term.includes(searchTerm) || translation.includes(searchTerm) || description.includes(searchTerm)) {
                     item.style.display = 'block';
+                    item.parentElement.parentElement.style.display = 'block'; // 显示父级容器
                 } else {
                     item.style.display = 'none';
                 }
